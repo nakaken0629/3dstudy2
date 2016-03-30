@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+ <head>
+  <meta charset="UTF-8" />
+  <title>0. 点を描く</title>
+ </head>
+ <body>
+  <h1>0. 点を描く</h1>
+  <!-- 1dot = 2x2 pixelとする。つまり320x200 dotの描画エリアとなる -->
+  <canvas id="myCanvas"
+          width="640"
+          height="400"
+          style="border: solid 2px black; " />
+
+<script>
+
+/**
+ * main関数。ここから始まる。
+ */
+var main = function() {
+  for(var i = 0; i < 100; i++) {
+    sx = randomInt(0, 319)
+    sy = randomInt(0, 199)
+    red   = randomInt(0, 255)
+    green = randomInt(0, 255)
+    blue  = randomInt(0, 255)
+    pset(sx, sy, createRgb(red, green, blue))
+  }
+}
+
+/**
+ * 点を描く
+ *
+ * @param {number} sx X座標(0 - 319)
+ * @param {number} sy Y座標(0 - 199)
+ * @param {string} rgb 色(#rrggbb)
+ */
+var pset = function(sx, sy, rgb) {
+    /* 1pxでは見づらいため、2pxとしている */
+    ctx.fillStyle = rgb;
+    ctx.fillRect(sx * 2, sy * 2, 2, 2);
+};
+
+// ================
+//    共通関数群
+// ================
+
+/**
+ * 色の文字列表現(#rrggbb)を生成する
+ * 
+ * @param {number} red   赤色(0 - 255)
+ * @param {number} green 緑色(0 - 255)
+ * @param {number} blue  青色(0 - 255)
+ * 
+ * @return {string} #rrggbb形式の文字列
+ */
+var createRgb = function(red, green, blue) {
+    return "#"
+        + ("0" + red.toString(16)).substr(-2)
+        + ("0" + green.toString(16)).substr(-2)
+        + ("0" + blue.toString(16)).substr(-2)
+}
+
+/**
+ * 指定された範囲の整数の乱数を返す
+ *
+ * @param {number} min 最小の値
+ * @param {number} max 最大の値
+ *
+ * @return {number} minとmaxの範囲に収まる乱数
+ */
+var randomInt = function(min, max) {
+      return Math.floor( Math.random() * (max - min + 1) ) + min;
+}
+
+var canvas;
+var ctx;
+
+/**
+ * htmlのロードが終了したら実行される
+ */
+window.onload = function() {
+  /* javascriptでcanvasを使うための決まり文句 */
+  canvas = document.getElementById("myCanvas")
+  ctx = canvas.getContext("2d")
+  main()
+}
+
+</script>
+ </body>
+</html>
+
