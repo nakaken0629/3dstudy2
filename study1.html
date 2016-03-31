@@ -51,6 +51,7 @@ var line = function(sx1, sy1, sx2, sy2, rgb) {
   }
 
   if (sx1 != sx2) {
+    /* "+ 0.0"は、整数を実数に変換している */
     var m = (sy2 - sy1 + 0.0) / (sx2 - sx1 + 0.0)
   } else {
     /* 0による除算を避ける処理 */
