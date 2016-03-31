@@ -18,7 +18,7 @@
  * main関数。ここから始まる。
  */
 var main = function() {
-  for(var i = 0; i < 100; i++) {
+  for(var i = 0; i < 10; i++) {
     sx1 = randomInt(0, 319)
     sy1 = randomInt(0, 199)
     sx2 = randomInt(0, 319)
@@ -59,7 +59,7 @@ var line = function(sx1, sy1, sx2, sy2, rgb) {
   var sy = sy1
 
   for (sx = sx1; sx <= sx2; sx++) {
-    pset(sx, sy, rgb)
+    pset(sx, Math.round(sy), rgb)
     sy += m
   }
 }
