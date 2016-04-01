@@ -24,7 +24,7 @@ var main = function() {
     red   = randomInt(0, 255)
     green = randomInt(0, 255)
     blue  = randomInt(0, 255)
-    pset(sx, sy, createRgb(red, green, blue))
+    pset(sx, sy, red, green, blue)
   }
 }
 
@@ -33,33 +33,29 @@ var main = function() {
  *
  * @param {number} sx X座標(0 - 319)
  * @param {number} sy Y座標(0 - 199)
- * @param {string} rgb 色(#rrggbb)
+ * @param {number} red   赤色(0 - 255)
+ * @param {number} green 緑色(0 - 255)
+ * @param {number} blue  青色(0 - 255)
  */
-var pset = function(sx, sy, rgb) {
-    /* 1pxでは見づらいため、2pxとしている */
-    ctx.fillStyle = rgb;
-    ctx.fillRect(sx * 2, sy * 2, 2, 2);
-};
+var pset = function(sx, sy, red, green, blue) {
+  /* 1pxでは見づらいため、2pxとしている */
+  var imageData = ctx.getImageData(sx * 2, sy * 2, 2, 2)
+  var pixels = imageData.data
+  var index = 0
+  for(var x = 0; x < 2; x++) {
+    for(var y = 0; y < 2; y++) {
+      pixels[index++] = red
+      pixels[index++] = green
+      pixels[index++] = blue
+      pixels[index++] = 255
+    }
+  }
+  ctx.putImageData(imageData, sx * 2, sy * 2)
+}
 
 // ================
 //    共通関数群
 // ================
-
-/**
- * 色の文字列表現(#rrggbb)を生成する
- * 
- * @param {number} red   赤色(0 - 255)
- * @param {number} green 緑色(0 - 255)
- * @param {number} blue  青色(0 - 255)
- * 
- * @return {string} #rrggbb形式の文字列
- */
-var createRgb = function(red, green, blue) {
-    return "#"
-        + ("0" + red.toString(16)).substr(-2)
-        + ("0" + green.toString(16)).substr(-2)
-        + ("0" + blue.toString(16)).substr(-2)
-}
 
 /**
  * 指定された範囲の整数の乱数を返す
@@ -70,7 +66,7 @@ var createRgb = function(red, green, blue) {
  * @return {number} minとmaxの範囲に収まる乱数
  */
 var randomInt = function(min, max) {
-      return Math.floor( Math.random() * (max - min + 1) ) + min;
+  return Math.floor( Math.random() * (max - min + 1) ) + min;
 }
 
 var canvas;
