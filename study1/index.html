@@ -53,13 +53,13 @@ var draw = function() {
 var line = function(sx1, sy1, sx2, sy2, red, green, blue) {
   /* -1 <= m <= 1を満たさない時、xとyの役割を入れ替える */
   if (Math.abs(sx2 - sx1) > Math.abs(sy2 - sy1)) {
-    lineImpl(sx1, sy1, sx2, sy2, red, green, blue, true)
+    lineX(sx1, sy1, sx2, sy2, red, green, blue)
   } else {
-    lineImpl(sy1, sx1, sy2, sx2, red, green, blue, false)
+    lineY(sx1, sy1, sx2, sy2, red, green, blue)
   }
 }
 
-var lineImpl = function(sx1, sy1, sx2, sy2, red, green, blue, isNormal) {
+var lineX = function(sx1, sy1, sx2, sy2, red, green, blue) {
   /* sx1 > sx2の場合、始点と終点を入れ替える */
   if (sx1 > sx2) {
     sx1 = [sx2, sx2 = sx1][0];  /* swap sx1 and sx2 */
@@ -76,12 +76,30 @@ var lineImpl = function(sx1, sy1, sx2, sy2, red, green, blue, isNormal) {
   var sy = sy1
 
   for (sx = sx1; sx <= sx2; sx++) {
-    if (isNormal) {
-      pset(sx, Math.round(sy), red, green, blue)
-    } else {
-      pset(Math.round(sy), sx, red, green, blue)
-    }
+    pset(sx, Math.round(sy), red, green, blue)
     sy += m
+  }
+}
+
+var lineY = function(sx1, sy1, sx2, sy2, red, green, blue) {
+  /* sy1 > sy2の場合、始点と終点を入れ替える */
+  if (sy1 > sy2) {
+    sy1 = [sy2, sy2 = sy1][0];  /* swap sy1 and sy2 */
+    sx1 = [sx2, sx2 = sx1][0];  /* swap sx1 and sx2 */
+  }
+
+  if (sy1 != sy2) {
+    /* "+ 0.0"は、整数を実数に変換している */
+    var m = (sx2 - sx1 + 0.0) / (sy2 - sy1 + 0.0)
+  } else {
+    /* 0による除算を避ける処理 */
+    var m = 0
+  }
+  var sx = sx1
+
+  for (sy = sy1; sy <= sy2; sy++) {
+    pset(Math.round(sx), sy, red, green, blue)
+    sx += m
   }
 }
 
