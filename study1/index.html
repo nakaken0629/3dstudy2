@@ -51,10 +51,15 @@ var draw = function() {
  * @param {number} blue  青色(0 - 255)
  */
 var line = function(sx1, sy1, sx2, sy2, red, green, blue) {
-  /*
-   * TODO: -1 <= m <= 1を満たさない時に、sxとsyの関係を入れ替える
-   */
+  /* -1 <= m <= 1を満たさない時、xとyの役割を入れ替える */
+  if (Math.abs(sx2 - sx1) > Math.abs(sy2 - sy1)) {
+    lineImpl(sx1, sy1, sx2, sy2, red, green, blue, true)
+  } else {
+    lineImpl(sy1, sx1, sy2, sx2, red, green, blue, false)
+  }
+}
 
+var lineImpl = function(sx1, sy1, sx2, sy2, red, green, blue, isNormal) {
   /* sx1 > sx2の場合、始点と終点を入れ替える */
   if (sx1 > sx2) {
     sx1 = [sx2, sx2 = sx1][0];  /* swap sx1 and sx2 */
@@ -71,7 +76,11 @@ var line = function(sx1, sy1, sx2, sy2, red, green, blue) {
   var sy = sy1
 
   for (sx = sx1; sx <= sx2; sx++) {
-    pset(sx, Math.round(sy), red, green, blue)
+    if (isNormal) {
+      pset(sx, Math.round(sy), red, green, blue)
+    } else {
+      pset(Math.round(sy), sx, red, green, blue)
+    }
     sy += m
   }
 }
