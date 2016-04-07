@@ -22,24 +22,24 @@ var imageData;
  * main関数。ここから始まる。
  */
 var main = function() {
-  imageData = ctx.getImageData(0, 0, 640, 400)
-  draw()
-  ctx.putImageData(imageData, 0, 0)
-}
+  imageData = ctx.getImageData(1, 0, 640, 400);
+  draw();
+  ctx.putImageData(imageData, 0, 0);
+};
 
 /**
  * バッファーに対して一連の描画を行う。
  */
 var draw = function() {
   for(var i = 0; i < 100; i++) {
-    sx = randomInt(0, 319)
-    sy = randomInt(0, 199)
-    red   = randomInt(0, 255)
-    green = randomInt(0, 255)
-    blue  = randomInt(0, 255)
-    pset(sx, sy, red, green, blue)
+    sx = randomInt(0, 319);
+    sy = randomInt(0, 199);
+    red   = randomInt(0, 255);
+    green = randomInt(0, 255);
+    blue  = randomInt(0, 255);
+    pset(sx, sy, red, green, blue);
   }
-}
+};
 
 /**
  * 点を描く
@@ -52,18 +52,18 @@ var draw = function() {
  */
 var pset = function(sx, sy, red, green, blue) {
   /* 1pxでは見づらいため、2pxとしている */
-  var width = imageData.width
-  var pixels = imageData.data
+  var width = imageData.width;
+  var pixels = imageData.data;
   for(var x = sx * 2; x < sx * 2 + 2; x++) {
     for(var y = sy * 2; y < sy * 2 + 2; y++) {
-      index = (x + y * width) * 4
-      pixels[index + 0] = red
-      pixels[index + 1] = green
-      pixels[index + 2] = blue
-      pixels[index + 3] = 255
+      index = (x + y * width) * 4;
+      pixels[index + 0] = red;
+      pixels[index + 1] = green;
+      pixels[index + 2] = blue;
+      pixels[index + 3] = 255;
     }
   }
-}
+};
 
 // ================
 //    共通関数群
@@ -79,17 +79,17 @@ var pset = function(sx, sy, red, green, blue) {
  */
 var randomInt = function(min, max) {
   return Math.floor( Math.random() * (max - min + 1) ) + min;
-}
+};
 
 /**
  * htmlのロードが終了したら実行される
  */
 window.onload = function() {
   /* javascriptでcanvasを使うための決まり文句 */
-  canvas = document.getElementById("myCanvas")
-  ctx = canvas.getContext("2d")
-  main()
-}
+  canvas = document.getElementById("myCanvas");
+  ctx = canvas.getContext("2d");
+  main();
+};
 
 </script>
  </body>
