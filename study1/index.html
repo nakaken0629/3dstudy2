@@ -72,8 +72,8 @@ var line = function(sx1, sy1, sx2, sy2, red, green, blue) {
 var lineX = function(sx1, sy1, sx2, sy2, red, green, blue) {
   /* sx1 > sx2の場合、始点と終点を入れ替える */
   if (sx1 > sx2) {
-    sx1 = [sx2, sx2 = sx1][0];  /* swap sx1 and sx2 */
-    sy1 = [sy2, sy2 = sy1][0];  /* swap sy1 and sy2 */
+    sx1 = [sx2, sx2 = sx1][0];  /* sx1とsx2を入れ替える */
+    sy1 = [sy2, sy2 = sy1][0];  /* sy1とsy2を入れ替える */
   }
 
   if (sx1 != sx2) {
@@ -94,8 +94,8 @@ var lineX = function(sx1, sy1, sx2, sy2, red, green, blue) {
 var lineY = function(sx1, sy1, sx2, sy2, red, green, blue) {
   /* sy1 > sy2の場合、始点と終点を入れ替える */
   if (sy1 > sy2) {
-    sy1 = [sy2, sy2 = sy1][0];  /* swap sy1 and sy2 */
-    sx1 = [sx2, sx2 = sx1][0];  /* swap sx1 and sx2 */
+    sy1 = [sy2, sy2 = sy1][0];  /* sy1とsy2を入れ替える */
+    sx1 = [sx2, sx2 = sx1][0];  /* sx1とsx2を入れ替える */
   }
 
   if (sy1 != sy2) {
