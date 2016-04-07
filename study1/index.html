@@ -22,26 +22,26 @@ var imageData;
  * main関数。ここから始まる。
  */
 var main = function() {
-  imageData = ctx.getImageData(0, 0, 640, 400)
-  draw()
-  ctx.putImageData(imageData, 0, 0)
-}
+  imageData = ctx.getImageData(0, 0, 640, 400);
+  draw();
+  ctx.putImageData(imageData, 0, 0);
+};
 
 /**
  * バッファーに対して一連の描画を行う。
  */
 var draw = function() {
   for(var i = 0; i < 10; i++) {
-    sx1 = randomInt(0, 319)
-    sy1 = randomInt(0, 199)
-    sx2 = randomInt(0, 319)
-    sy2 = randomInt(0, 199)
-    red   = randomInt(0, 255)
-    green = randomInt(0, 255)
-    blue  = randomInt(0, 255)
-    line(sx1, sy1, sx2, sy2, red, green, blue)
+    sx1 = randomInt(0, 319);
+    sy1 = randomInt(0, 199);
+    sx2 = randomInt(0, 319);
+    sy2 = randomInt(0, 199);
+    red   = randomInt(0, 255);
+    green = randomInt(0, 255);
+    blue  = randomInt(0, 255);
+    line(sx1, sy1, sx2, sy2, red, green, blue);
   }
-}
+};
 
 /**
  * 線分を描く
@@ -57,11 +57,11 @@ var draw = function() {
 var line = function(sx1, sy1, sx2, sy2, red, green, blue) {
   /* -1 <= m <= 1を満たさない時、xとyの役割を入れ替える */
   if (Math.abs(sx2 - sx1) > Math.abs(sy2 - sy1)) {
-    lineX(sx1, sy1, sx2, sy2, red, green, blue)
+    lineX(sx1, sy1, sx2, sy2, red, green, blue);
   } else {
-    lineY(sx1, sy1, sx2, sy2, red, green, blue)
+    lineY(sx1, sy1, sx2, sy2, red, green, blue);
   }
-}
+};
 
 var lineX = function(sx1, sy1, sx2, sy2, red, green, blue) {
   /* sx1 > sx2の場合、始点と終点を入れ替える */
@@ -72,18 +72,18 @@ var lineX = function(sx1, sy1, sx2, sy2, red, green, blue) {
 
   if (sx1 != sx2) {
     /* "+ 0.0"は、整数を実数に変換している */
-    var m = (sy2 - sy1 + 0.0) / (sx2 - sx1 + 0.0)
+    var m = (sy2 - sy1 + 0.0) / (sx2 - sx1 + 0.0);
   } else {
     /* 0による除算を避ける処理 */
-    var m = 0
+    var m = 0;
   }
-  var sy = sy1
+  var sy = sy1;
 
   for (sx = sx1; sx <= sx2; sx++) {
-    pset(sx, Math.round(sy), red, green, blue)
-    sy += m
+    pset(sx, Math.round(sy), red, green, blue);
+    sy += m;
   }
-}
+};
 
 var lineY = function(sx1, sy1, sx2, sy2, red, green, blue) {
   /* sy1 > sy2の場合、始点と終点を入れ替える */
@@ -94,18 +94,18 @@ var lineY = function(sx1, sy1, sx2, sy2, red, green, blue) {
 
   if (sy1 != sy2) {
     /* "+ 0.0"は、整数を実数に変換している */
-    var m = (sx2 - sx1 + 0.0) / (sy2 - sy1 + 0.0)
+    var m = (sx2 - sx1 + 0.0) / (sy2 - sy1 + 0.0);
   } else {
     /* 0による除算を避ける処理 */
-    var m = 0
+    var m = 0;
   }
-  var sx = sx1
+  var sx = sx1;
 
   for (sy = sy1; sy <= sy2; sy++) {
-    pset(Math.round(sx), sy, red, green, blue)
-    sx += m
+    pset(Math.round(sx), sy, red, green, blue);
+    sx += m;
   }
-}
+};
 
 /**
  * 点を描く
@@ -118,18 +118,18 @@ var lineY = function(sx1, sy1, sx2, sy2, red, green, blue) {
  */
 var pset = function(sx, sy, red, green, blue) {
   /* 1pxでは見づらいため、2pxとしている */
-  var width = imageData.width
-  var pixels = imageData.data
+  var width = imageData.width;
+  var pixels = imageData.data;
   for(var x = sx * 2; x < sx * 2 + 2; x++) {
     for(var y = sy * 2; y < sy * 2 + 2; y++) {
-      index = (x + y * width) * 4
-      pixels[index + 0] = red
-      pixels[index + 1] = green
-      pixels[index + 2] = blue
-      pixels[index + 3] = 255
+      index = (x + y * width) * 4;
+      pixels[index + 0] = red;
+      pixels[index + 1] = green;
+      pixels[index + 2] = blue;
+      pixels[index + 3] = 255;
     }
   }
-}
+};
 
 // ================
 //    共通関数群
@@ -145,17 +145,17 @@ var pset = function(sx, sy, red, green, blue) {
  */
 var randomInt = function(min, max) {
   return Math.floor( Math.random() * (max - min + 1) ) + min;
-}
+};
 
 /**
  * htmlのロードが終了したら実行される
  */
 window.onload = function() {
   /* javascriptでcanvasを使うための決まり文句 */
-  canvas = document.getElementById("myCanvas")
-  ctx = canvas.getContext("2d")
-  main()
-}
+  canvas = document.getElementById("myCanvas");
+  ctx = canvas.getContext("2d");
+  main();
+};
 
 </script>
  </body>
