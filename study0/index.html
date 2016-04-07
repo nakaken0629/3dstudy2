@@ -14,6 +14,10 @@
 
 <script>
 
+var canvas;
+var ctx;
+var imageData;
+
 /**
  * main関数。ここから始まる。
  */
@@ -76,10 +80,6 @@ var pset = function(sx, sy, red, green, blue) {
 var randomInt = function(min, max) {
   return Math.floor( Math.random() * (max - min + 1) ) + min;
 }
-
-var canvas;
-var ctx;
-var imageData;
 
 /**
  * htmlのロードが終了したら実行される
