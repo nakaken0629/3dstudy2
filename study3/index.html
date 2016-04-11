@@ -101,6 +101,10 @@ var scan = function(sx1, sy1, sx2, sy2, y) {
   }
 
   /* 線分とスキャンラインとの交点のX座標を計算して返す */
+  if (sy1 == sy2) {
+    /* 0除算を防ぐ */
+    return sx1;
+  }
   var x = (sx2 - sx1 + 0.0) / (sy2 - sy1) * (y - sy1) + sx1;
   return Math.round(x);
 };
