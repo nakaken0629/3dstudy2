@@ -110,38 +110,6 @@ var scan = function(sx1, sy1, sx2, sy2, y) {
 };
 
 /**
- * 与えられた引数の中から、-1を除く値のうち最小のものを返す
- *
- * @return {number} 最小の値
- */
-var min = function() {
-  /* 可変長の引数から、-1を除いた配列を作成する */
-  var args = Array.apply(null, arguments);
-  var values = args.filter(function(element, index, array) {
-    return element != -1;
-  });
-
-  /* 最小値を返す */
-  return Math.min.apply(null, values);
-}
-
-/**
- * 与えられた引数の中から、-1を除く値のうち最大のものを返す
- *
- * @return {number} 最大の値
- */
-var max = function() {
-  /* 可変長の引数から、-1を除いた配列を作成する */
-  var args = Array.apply(null, arguments);
-  var values = args.filter(function(element, index, array) {
-    return element != -1;
-  });
-
-  /* 最大値を返す */
-  return Math.max.apply(null, values);
-}
-
-/**
  * 点を描く
  *
  * @param {number} sx X座標(0 - 319)
@@ -180,6 +148,38 @@ var pset = function(sx, sy, red, green, blue) {
 var randomInt = function(min, max) {
   return Math.floor( Math.random() * (max - min + 1) ) + min;
 };
+
+/**
+ * 与えられた引数の中から、-1を除く値のうち最小のものを返す
+ *
+ * @return {number} 最小の値
+ */
+var min = function() {
+  /* 可変長の引数から、-1を除いた配列を作成する */
+  var args = Array.apply(null, arguments);
+  var values = args.filter(function(element, index, array) {
+    return element != -1;
+  });
+
+  /* 最小値を返す */
+  return Math.min.apply(null, values);
+}
+
+/**
+ * 与えられた引数の中から、-1を除く値のうち最大のものを返す
+ *
+ * @return {number} 最大の値
+ */
+var max = function() {
+  /* 可変長の引数から、-1を除いた配列を作成する */
+  var args = Array.apply(null, arguments);
+  var values = args.filter(function(element, index, array) {
+    return element != -1;
+  });
+
+  /* 最大値を返す */
+  return Math.max.apply(null, values);
+}
 
 /**
  * htmlのロードが終了したら実行される
