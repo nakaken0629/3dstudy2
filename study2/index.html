@@ -22,7 +22,7 @@ var imageData;
  * main関数。ここから始まる。
  */
 var main = function() {
-  imageData = ctx.getImageData(0, 0, 640, 400);
+  imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   draw();
   ctx.putImageData(imageData, 0, 0);
 };
@@ -32,13 +32,13 @@ var main = function() {
  */
 var draw = function() {
   for(var i = 0; i < 10; i++) {
-    sx1 = randomInt(0, 319);
-    sy1 = randomInt(0, 199);
-    sx2 = randomInt(0, 319);
-    sy2 = randomInt(0, 199);
-    red   = randomInt(0, 255);
-    green = randomInt(0, 255);
-    blue  = randomInt(0, 255);
+    sx1 = randomX();
+    sy1 = randomY();
+    sx2 = randomX();
+    sy2 = randomY();
+    red   = randomColor();
+    green = randomColor();
+    blue  = randomColor();
     line(sx1, sy1, sx2, sy2, red, green, blue);
   }
 };
@@ -46,13 +46,13 @@ var draw = function() {
 /**
  * 線分を描く
  *
- * @param {number} sx1 X1座標(0 - 319)
- * @param {number} sy1 Y1座標(0 - 199)
- * @param {number} sx2 X2座標(0 - 319)
- * @param {number} sy2 Y2座標(0 - 199)
- * @param {number} red   赤色(0 - 255)
- * @param {number} green 緑色(0 - 255)
- * @param {number} blue  青色(0 - 255)
+ * @param {number} sx1 X1座標
+ * @param {number} sy1 Y1座標
+ * @param {number} sx2 X2座標
+ * @param {number} sy2 Y2座標
+ * @param {number} red   赤色
+ * @param {number} green 緑色
+ * @param {number} blue  青色
  */
 var line = function(sx1, sy1, sx2, sy2, red, green, blue) {
   /*
@@ -182,11 +182,11 @@ var lineYMinus = function(sx1, sy1, sx2, sy2, red, green, blue) {
 /**
  * 点を描く
  *
- * @param {number} sx X座標(0 - 319)
- * @param {number} sy Y座標(0 - 199)
- * @param {number} red   赤色(0 - 255)
- * @param {number} green 緑色(0 - 255)
- * @param {number} blue  青色(0 - 255)
+ * @param {number} sx X座標
+ * @param {number} sy Y座標
+ * @param {number} red   赤色
+ * @param {number} green 緑色
+ * @param {number} blue  青色
  */
 var pset = function(sx, sy, red, green, blue) {
   /* 1pxでは見づらいため、2pxとしている */
@@ -218,6 +218,33 @@ var pset = function(sx, sy, red, green, blue) {
 var randomInt = function(min, max) {
   return Math.floor( Math.random() * (max - min + 1) ) + min;
 };
+
+/**
+ * ランダムなX座標を返す
+ *
+ * @return {number} グローバル変数canvasに収まるX座標
+ */
+var randomX = function() {
+  return randomInt(0, canvas.width / 2 - 1); 
+}
+
+/**
+ * ランダムなY座標を返す
+ *
+ * @return {number} グローバル変数canvasに収まるY座標
+ */
+var randomY = function() {
+  return randomInt(0, canvas.height / 2 - 1); 
+}
+
+/**
+ * ランダムな色を返す
+ *
+ * @return {number} 0から255の乱数
+ */
+var randomColor = function() {
+  return randomInt(0, 255);
+}
 
 /**
  * htmlのロードが終了したら実行される
