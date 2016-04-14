@@ -32,11 +32,11 @@ var main = function() {
  */
 var draw = function() {
   for(var i = 0; i < 100; i++) {
-    sx = randomX();
-    sy = randomY();
-    red   = randomColor();
-    green = randomColor();
-    blue  = randomColor();
+    var sx = randomX();
+    var sy = randomY();
+    var red   = randomColor();
+    var green = randomColor();
+    var blue  = randomColor();
     pset(sx, sy, red, green, blue);
   }
 };
@@ -56,7 +56,7 @@ var pset = function(sx, sy, red, green, blue) {
   var pixels = imageData.data;
   for(var x = sx * 2; x < sx * 2 + 2; x++) {
     for(var y = sy * 2; y < sy * 2 + 2; y++) {
-      index = (x + y * width) * 4;
+      var index = (x + y * width) * 4;
       pixels[index + 0] = red;
       pixels[index + 1] = green;
       pixels[index + 2] = blue;
@@ -88,7 +88,7 @@ var randomInt = function(min, max) {
  */
 var randomX = function() {
   return randomInt(0, canvas.width / 2 - 1); 
-}
+};
 
 /**
  * ランダムなY座標を返す
@@ -97,7 +97,7 @@ var randomX = function() {
  */
 var randomY = function() {
   return randomInt(0, canvas.height / 2 - 1); 
-}
+};
 
 /**
  * ランダムな色を返す
@@ -106,7 +106,7 @@ var randomY = function() {
  */
 var randomColor = function() {
   return randomInt(0, 255);
-}
+};
 
 /**
  * htmlのロードが終了したら実行される

@@ -2,10 +2,10 @@
 <html lang="ja">
  <head>
   <meta charset="UTF-8" />
-  <title>3. ３角形面を描く</title>
+  <title>4. 透視投影</title>
  </head>
  <body>
-  <h1>3. ３角形面を描く</h1>
+  <h1>4. 透視投影</h1>
   <!-- 1dot = 2x2 pixelとする。つまり320x200 dotの描画エリアとなる -->
   <canvas id="myCanvas"
           width="640"
@@ -22,39 +22,45 @@ var imageData;
  * main関数。ここから始まる。
  */
 var main = function() {
+  animationLoop();
+};
+
+function animationLoop(){
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   draw();
   ctx.putImageData(imageData, 0, 0);
-};
+  requestAnimationFrame(animationLoop);
+}
 
 /**
  * バッファーに対して一連の描画を行う。
  */
 var draw = function() {
-  var sx1 = randomX();
-  var sy1 = randomY();
-  var sx2 = randomX();
-  var sy2 = randomY();
-  var sx3 = randomX();
-  var sy3 = randomY();
-  var red   = randomColor();
-  var green = randomColor();
-  var blue  = randomColor();
+  var sx1 = randomInt(0, 319);
+  var sy1 = randomInt(0, 199);
+  var sx2 = randomInt(0, 319);
+  var sy2 = randomInt(0, 199);
+  var sx3 = randomInt(0, 319);
+  var sy3 = randomInt(0, 199);
+  var red   = randomInt(0, 255);
+  var green = randomInt(0, 255);
+  var blue  = randomInt(0, 255);
   triangle(sx1, sy1, sx2, sy2, sx3, sy3, red, green, blue);
 };
 
 /**
  * 素朴なアルゴリズムで三角形面を描く
  *
- * @param {number} sx1 X1座標
- * @param {number} sy1 Y1座標
- * @param {number} sx2 X2座標
- * @param {number} sy2 Y2座標
- * @param {number} sx3 X3座標
- * @param {number} sy3 Y3座標
- * @param {number} red   赤色
- * @param {number} green 緑色
- * @param {number} blue  青色
+ * @param {number} sx1 X1座標(0 - 319)
+ * @param {number} sy1 Y1座標(0 - 199)
+ * @param {number} sx2 X2座標(0 - 319)
+ * @param {number} sy2 Y2座標(0 - 199)
+ * @param {number} sx3 X3座標(0 - 319)
+ * @param {number} sy3 Y3座標(0 - 199)
+ * @param {number} red   赤色(0 - 255)
+ * @param {number} green 緑色(0 - 255)
+ * @param {number} blue  青色(0 - 255)
  */
 var triangle = function(sx1, sy1, sx2, sy2, sx3, sy3, red, green, blue) {
   /* ミニマックス値を求める */
@@ -79,11 +85,11 @@ var triangle = function(sx1, sy1, sx2, sy2, sx3, sy3, red, green, blue) {
 /**
  * 線分とスキャンラインとの交点のX座標を求める
  *
- * @param {number} sx1 線分のX1座標
- * @param {number} sy1 線分のY1座標
- * @param {number} sx2 線分のX2座標
- * @param {number} sy2 線分のY2座標
- * @param {number} y スキャンラインのY座標
+ * @param {number} sx1 線分のX1座標(0 - 319)
+ * @param {number} sy1 線分のY1座標(0 - 199)
+ * @param {number} sx2 線分のX2座標(0 - 319)
+ * @param {number} sy2 線分のY2座標(0 - 199)
+ * @param {number} y スキャンラインのY座標(0 - 199)
  *
  * @return {number} 線分とスキャンラインとの交点のX座標
  *                  yがsy1とsy2の間にない場合は-1
@@ -112,11 +118,11 @@ var scan = function(sx1, sy1, sx2, sy2, y) {
 /**
  * 点を描く
  *
- * @param {number} sx X座標
- * @param {number} sy Y座標
- * @param {number} red   赤色
- * @param {number} green 緑色
- * @param {number} blue  青色
+ * @param {number} sx X座標(0 - 319)
+ * @param {number} sy Y座標(0 - 199)
+ * @param {number} red   赤色(0 - 255)
+ * @param {number} green 緑色(0 - 255)
+ * @param {number} blue  青色(0 - 255)
  */
 var pset = function(sx, sy, red, green, blue) {
   /* 1pxでは見づらいため、2pxとしている */
@@ -150,33 +156,6 @@ var randomInt = function(min, max) {
 };
 
 /**
- * ランダムなX座標を返す
- *
- * @return {number} グローバル変数canvasに収まるX座標
- */
-var randomX = function() {
-  return randomInt(0, canvas.width / 2 - 1); 
-};
-
-/**
- * ランダムなY座標を返す
- *
- * @return {number} グローバル変数canvasに収まるY座標
- */
-var randomY = function() {
-  return randomInt(0, canvas.height / 2 - 1); 
-};
-
-/**
- * ランダムな色を返す
- *
- * @return {number} 0から255の乱数
- */
-var randomColor = function() {
-  return randomInt(0, 255);
-};
-
-/**
  * 与えられた引数の中から、-1を除く値のうち最小のものを返す
  *
  * @return {number} 最小の値
@@ -190,7 +169,7 @@ var min = function() {
 
   /* 最小値を返す */
   return Math.min.apply(null, values);
-}
+};
 
 /**
  * 与えられた引数の中から、-1を除く値のうち最大のものを返す
@@ -206,7 +185,7 @@ var max = function() {
 
   /* 最大値を返す */
   return Math.max.apply(null, values);
-}
+};
 
 /**
  * htmlのロードが終了したら実行される
@@ -216,7 +195,7 @@ window.onload = function() {
   canvas = document.getElementById("myCanvas");
   ctx = canvas.getContext("2d");
   main();
-}
+};
 
 </script>
  </body>
