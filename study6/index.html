@@ -23,15 +23,9 @@ var imageData;
  * 座標の単位はcmとする。
  * 1cm = 20dot
  */
-var x1 = 0;
-var y1 = 0;
-var z1 = 0;
-var x2 = 0;
-var y2 = 0;
-var z2 = 0;
-var x3 = 0;
-var y3 = 0;
-var z3 = 0;
+var p1 = {x:0, y:0, z:0};
+var p2 = {x:0, y:0, z:0};
+var p3 = {x:0, y:0, z:0};
 var red;
 var blue;
 var green;
@@ -64,9 +58,9 @@ var draw = function() {
    * 60fps出ていると想定して、増減値は960 / 60としている。
    */
   var vz = 960 / 60;
-  z1 -= vz;
-  z2 -= vz;
-  z3 -= vz;
+  p1.z -= vz;
+  p2.z -= vz;
+  p3.z -= vz;
 
   /*
    * 前方クリッピング平面を超えたら、新しく三角形面を作成する。
@@ -74,33 +68,33 @@ var draw = function() {
    * 後方クリッピング平面は、視点から1,200cmの場所とする。
    * widthとheightは、後方クリッピング平面の幅と高さを算出している。
    */
-  if ((z1 + z2 + z3) / 3 <= 48) {
+  if ((p1.z + p2.z + p3.z) / 3 <= 48) {
     var width  = 16 / 48 * 4800;
     var height = 10 / 48 * 4800;
     var z = 4800;
 
     /* 画面の中心が原点になるように補正している */
-    x1 = randomInt(0, width  - 1) - width  / 2;
-    y1 = randomInt(0, height - 1) - height / 2;
-    z1 = z;
-    x2 = randomInt(0, width  - 1) - width  / 2;
-    y2 = randomInt(0, height - 1) - height / 2;
-    z2 = z;
-    x3 = randomInt(0, width  - 1) - width  / 2;
-    y3 = randomInt(0, height - 1) - height / 2;
-    z3 = z;
+    p1.x = randomInt(0, width  - 1) - width  / 2;
+    p1.y = randomInt(0, height - 1) - height / 2;
+    p1.z = z;
+    p2.x = randomInt(0, width  - 1) - width  / 2;
+    p2.y = randomInt(0, height - 1) - height / 2;
+    p2.z = z;
+    p3.x = randomInt(0, width  - 1) - width  / 2;
+    p3.y = randomInt(0, height - 1) - height / 2;
+    p3.z = z;
     red   = randomInt(0, 255);
     green = randomInt(0, 255);
     blue  = randomInt(0, 255);
   }
 
   /* スクリーン上に投影された座標を計算して描画する */
-  var sx1 = Math.floor(48 / z1 * x1) + 320 / 2;
-  var sy1 = Math.floor(48 / z1 * y1) + 200 / 2;
-  var sx2 = Math.floor(48 / z2 * x2) + 320 / 2;
-  var sy2 = Math.floor(48 / z2 * y2) + 200 / 2;
-  var sx3 = Math.floor(48 / z3 * x3) + 320 / 2;
-  var sy3 = Math.floor(48 / z3 * y3) + 200 / 2;
+  var sx1 = Math.floor(48 / p1.z * p1.x) + 320 / 2;
+  var sy1 = Math.floor(48 / p1.z * p1.y) + 200 / 2;
+  var sx2 = Math.floor(48 / p2.z * p2.x) + 320 / 2;
+  var sy2 = Math.floor(48 / p2.z * p2.y) + 200 / 2;
+  var sx3 = Math.floor(48 / p3.z * p3.x) + 320 / 2;
+  var sy3 = Math.floor(48 / p3.z * p3.y) + 200 / 2;
   triangle(sx1, sy1, sx2, sy2, sx3, sy3, red, green, blue);
 };
 
