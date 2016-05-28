@@ -7,7 +7,6 @@
  <body>
   <h1>6. 後面除去による隠面処理</h1>
   <!-- 1dot = 2x2 pixelとする。つまり320x200 dotの描画エリアとなる -->
-  <p>※ 近づいた三角形面の描画がずれるのは、三角形面の描画に不具合があるため</p>
   <canvas id="myCanvas"
           width="640"
           height="400"
@@ -23,17 +22,25 @@ var imageData;
  * 座標の単位はcmとする。
  * 1cm = 20dot
  */
-var p1 = {x:0, y:0, z:0};
-var p2 = {x:0, y:0, z:0};
-var p3 = {x:0, y:0, z:0};
+var p1;
+var p2;
+var p3;
 var red;
-var blue;
 var green;
+var blue;
+var degree
 
 /**
  * main関数。ここから始まる。
  */
 var main = function() {
+  p1 = {x:    0, y:-800, z: 800};
+  p2 = {x:    0, y: 800, z: 800};
+  p3 = {x: 1000, y:   0, z: 400};
+  red   = randomInt(0, 255);
+  green = randomInt(0, 255);
+  blue  = randomInt(0, 255);
+  vx = -20;
   animationLoop();
 };
 
@@ -53,39 +60,12 @@ function animationLoop(){
  * バッファーに対して一連の描画を行う。
  */
 var draw = function() {
-  /*
-   * 三角形面を秒速960cmで近づかせる。
-   * 60fps出ていると想定して、増減値は960 / 60としている。
-   */
-  var vz = 960 / 60;
-  p1.z -= vz;
-  p2.z -= vz;
-  p3.z -= vz;
-
-  /*
-   * 前方クリッピング平面を超えたら、新しく三角形面を作成する。
-   * 前方クリッピング平面は、視点から48cmの場所とする。
-   * 後方クリッピング平面は、視点から1,200cmの場所とする。
-   * widthとheightは、後方クリッピング平面の幅と高さを算出している。
-   */
-  if ((p1.z + p2.z + p3.z) / 3 <= 48) {
-    var width  = 16 / 48 * 4800;
-    var height = 10 / 48 * 4800;
-    var z = 4800;
-
-    /* 画面の中心が原点になるように補正している */
-    p1.x = randomInt(0, width  - 1) - width  / 2;
-    p1.y = randomInt(0, height - 1) - height / 2;
-    p1.z = z;
-    p2.x = randomInt(0, width  - 1) - width  / 2;
-    p2.y = randomInt(0, height - 1) - height / 2;
-    p2.z = z;
-    p3.x = randomInt(0, width  - 1) - width  / 2;
-    p3.y = randomInt(0, height - 1) - height / 2;
-    p3.z = z;
-    red   = randomInt(0, 255);
-    green = randomInt(0, 255);
-    blue  = randomInt(0, 255);
+  /* p3のx座標を-1000から+1000の間で反復移動させる */
+  p3.x += vx;
+  if (vx > 0) {
+    vx *= (p3.x >  1000) ? -1 : 1;
+  } else {
+    vx *= (p3.x < -1000) ? -1 : 1;
   }
 
   /* スクリーン上に投影された座標を計算して描画する */
