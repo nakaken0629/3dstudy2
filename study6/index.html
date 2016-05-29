@@ -34,8 +34,8 @@ var degree
  * main関数。ここから始まる。
  */
 var main = function() {
-  p1 = {x:    0, y:-800, z: 800};
-  p2 = {x:    0, y: 800, z: 800};
+  p1 = {x:    0, y: 800, z: 800};
+  p2 = {x:    0, y:-800, z: 800};
   p3 = {x: 1000, y:   0, z: 400};
   red   = randomInt(0, 255);
   green = randomInt(0, 255);
@@ -68,6 +68,21 @@ var draw = function() {
     vx *= (p3.x < -1000) ? -1 : 1;
   }
 
+  /* 原点と３角形面の重心を結ぶ視線ベクトルVを計算する */
+  var po = {x:0, y:0, z:0};
+  var pg = {x: (p1.x + p2.x + p3.x) / 3,
+            y: (p1.y + p2.y + p3.y) / 3,
+            z: (p1.z + p2.z + p3.z) / 3};
+  var V = makeVector(po, pg);
+
+  /* ３角形面の法線ベクトルNを計算する */
+  var v1 = makeVector(p1, p2);
+  var v2 = makeVector(p1, p3);
+  var N = calcCrossProduct(v1, v2);
+  
+  /* 視線ベクトルVと法線ベクトルNの内積を計算する */
+  var innerProduct = calcInnerProduct(V, N);
+
   /* スクリーン上に投影された座標を計算して描画する */
   var sx1 = Math.floor(48 / p1.z * p1.x) + 320 / 2;
   var sy1 = Math.floor(48 / p1.z * p1.y) + 200 / 2;
@@ -75,10 +90,60 @@ var draw = function() {
   var sy2 = Math.floor(48 / p2.z * p2.y) + 200 / 2;
   var sx3 = Math.floor(48 / p3.z * p3.x) + 320 / 2;
   var sy3 = Math.floor(48 / p3.z * p3.y) + 200 / 2;
-  triangle(sx1, sy1, sx2, sy2, sx3, sy3, red, green, blue);
+  if (innerProduct > 0) {
+    /* 三角形面が表を向いている */
+    triangle(sx1, sy1, sx2, sy2, sx3, sy3, red, green, blue);
+  } else {
+    /* 三角形面が裏を向いている */
+    triangle(sx1, sy1, sx2, sy2, sx3, sy3,   0,     0,    0);
+  }
 };
 
-/**
+/*
+ * ２点を結ぶベクトルを生成する
+ * 
+ * @param {array} p1 起点
+ * @param {array} p2 終点
+ *
+ * @return {array} ベクトル
+ */
+var makeVector = function(p1, p2) {
+  return {
+    x: p2.x - p1.x,
+    y: p2.y - p1.y,
+    z: p2.z - p1.z,
+  };
+};
+
+/*
+ * 外積を計算する
+ *
+ * @param {array} v1 ベクトル１
+ * @param {array} v2 ベクトル２
+ *
+ * @return {array} 外積
+ */
+var calcCrossProduct = function(v1, v2) {
+  return {
+    x: v1.y * v2.z - v1.z * v2.y,
+    y: v1.z * v2.x - v1.x * v2.z,
+    z: v1.x * v2.y - v1.y * v2.x,
+  };
+};
+
+/*
+ * 内積を計算する
+ *
+ * @param {array} v1 ベクトル１
+ * @param {array} v2 ベクトル２
+ *
+ * @return {float} 内積
+ */
+var calcInnerProduct = function(v1, v2) {
+  return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+};
+
+/*
  * 素朴なアルゴリズムで三角形面を描く
  *
  * @param {number} sx1 X1座標(0 - 319)
