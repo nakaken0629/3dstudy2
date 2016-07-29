@@ -6,7 +6,7 @@
  </head>
  <body>
   <h1>7. ペインタアルゴリズム</h1>
-  <p><input id="enabled" type="checkbox" checked="true">ペインタアルゴリズムを有効にする</input></p>
+  <form><p><input id="enabled" type="checkbox" checked="true">ペインタアルゴリズムを有効にする</input></p></form>
   <!-- 1dot = 2x2 pixelとする。つまり320x200 dotの描画エリアとなる -->
   <canvas id="myCanvas"
           width="640"
@@ -97,8 +97,6 @@ var draw = function() {
    * ３角形面t1とt2を、Z軸方向に往復移動させる。
    * ３角形面は手前と奥が入れ替わることになる。
    */
-  var slist = [];
-
   for (var i = 0; i < tlist.length; i++) {
     var t = tlist[i];
     t.p[0].z += t.vz;
@@ -108,11 +106,36 @@ var draw = function() {
     if (z < 300 || z > 800) {
       t.vz = -t.vz;
     }
-    
+  }
+
+  /*
+   * ペインタアルゴリズムで３角形面をソートする
+   */
+  if (document.forms[0].enabled.checked) {
+    tlist.sort(
+      function(t0, t1) {
+        z0 = (t0.p[0].z + t0.p[1].z + t0.p[2].z) / 3.0;
+        z1 = (t1.p[0].z + t1.p[1].z + t1.p[2].z) / 3.0;
+        if (z0 < z1) return 1;
+        if (z0 > z1) return -1;
+        return 0;
+      }
+    );
+  }
+
+  /*
+   * ３角形面を透視投影する
+   */
+  var slist = [];
+  for (var i = 0; i < tlist.length; i++) {
+    var t = tlist[i];
     var s = projection(t.p[0], t.p[1], t.p[2], t.rgb);
     slist.push(s);
   }
 
+  /*
+   * 透視投影された３角形面を描画する
+   */
   for (var i = 0; i < slist.length; i++) {
     var s = slist[i];
     triangle(s.sx1, s.sy1, s.sx2, s.sy2, s.sx3, s.sy3, s.red, s.green, s.blue);
