@@ -6,6 +6,7 @@
  </head>
  <body>
   <h1>7. ペインタアルゴリズム</h1>
+  <p><input id="enabled" type="checkbox" checked="true">ペインタアルゴリズムを有効にする</input></p>
   <!-- 1dot = 2x2 pixelとする。つまり320x200 dotの描画エリアとなる -->
   <canvas id="myCanvas"
           width="640"
@@ -27,7 +28,7 @@ var imageData;
 var t1 = {
   p: [
     {x:    0, y:   50, z: 800},
-    {x: 1200, y:  500, z: 800},
+    {x: 1000, y:  500, z: 800},
     {x:    0, y:  950, z: 800},
   ],
   rgb: {r: 255, g:   0, b:   0},
@@ -96,17 +97,25 @@ var draw = function() {
    * ３角形面t1とt2を、Z軸方向に往復移動させる。
    * ３角形面は手前と奥が入れ替わることになる。
    */
+  var slist = [];
+
   for (var i = 0; i < tlist.length; i++) {
     var t = tlist[i];
-    var z = t.p[0].z + t.vz;
-    t.p[0].z = z;
-    t.p[1].z = z;
-    t.p[2].z = z;
+    t.p[0].z += t.vz;
+    t.p[1].z += t.vz;
+    t.p[2].z += t.vz;
+    var z = (t.p[0].z + t.p[1].z + t.p[2].z) / 3;
     if (z < 300 || z > 800) {
       t.vz = -t.vz;
     }
     
-    projection(t.p[0], t.p[1], t.p[2], t.rgb);
+    var s = projection(t.p[0], t.p[1], t.p[2], t.rgb);
+    slist.push(s);
+  }
+
+  for (var i = 0; i < slist.length; i++) {
+    var s = slist[i];
+    triangle(s.sx1, s.sy1, s.sx2, s.sy2, s.sx3, s.sy3, s.red, s.green, s.blue);
   }
 }
 
@@ -119,27 +128,28 @@ var projection = function(p1, p2, p3, rgb) {
   var height = 10 / 48 * 4800;
   var z = 4800;
 
-  x1 = p1.x - width  / 2;
-  y1 = p1.y - height / 2;
-  z1 = p1.z;
-  x2 = p2.x - width  / 2;
-  y2 = p2.y - height / 2;
-  z2 = p2.z;
-  x3 = p3.x - width  / 2;
-  y3 = p3.y - height / 2;
-  z3 = p3.z;
-  red = rgb.r;
-  green = rgb.g;
-  blue = rgb.b;
+  var x1 = p1.x - width  / 2;
+  var y1 = p1.y - height / 2;
+  var z1 = p1.z;
+  var x2 = p2.x - width  / 2;
+  var y2 = p2.y - height / 2;
+  var z2 = p2.z;
+  var x3 = p3.x - width  / 2;
+  var y3 = p3.y - height / 2;
+  var z3 = p3.z;
 
   /* スクリーン上に投影された座標を計算して描画する */
-  var sx1 = Math.floor(48 / z1 * x1) + 320 / 2;
-  var sy1 = Math.floor(48 / z1 * y1) + 200 / 2;
-  var sx2 = Math.floor(48 / z2 * x2) + 320 / 2;
-  var sy2 = Math.floor(48 / z2 * y2) + 200 / 2;
-  var sx3 = Math.floor(48 / z3 * x3) + 320 / 2;
-  var sy3 = Math.floor(48 / z3 * y3) + 200 / 2;
-  triangle(sx1, sy1, sx2, sy2, sx3, sy3, red, green, blue);
+  var s = [];
+  s.sx1 = Math.floor(48 / z1 * x1) + 320 / 2;
+  s.sy1 = Math.floor(48 / z1 * y1) + 200 / 2;
+  s.sx2 = Math.floor(48 / z2 * x2) + 320 / 2;
+  s.sy2 = Math.floor(48 / z2 * y2) + 200 / 2;
+  s.sx3 = Math.floor(48 / z3 * x3) + 320 / 2;
+  s.sy3 = Math.floor(48 / z3 * y3) + 200 / 2;
+  s.red = rgb.r;
+  s.green = rgb.g;
+  s.blue = rgb.b;
+  return s;
 };
 
 /**
