@@ -60,31 +60,48 @@ tl[i++] = {p: [pl[4], pl[ 9], pl[ 5]], r: 255, g:   0, b:   0};
 tl[i++] = {p: [pl[6], pl[10], pl[ 7]], r: 255, g:   0, b:   0};
 tl[i++] = {p: [pl[6], pl[ 7], pl[11]], r: 255, g:   0, b:   0};
 
+/* 光線。スクリーン座標でいうと、右上の少し手前から照らしている */
+var Il = {x: 20000.0, y: -10000.0, z: 0.0, r: 255, g: 255, b: 255, vx: -500}
+
 /**
  * main関数。ここから始まる。
  */
 var main = function() {
+  animationLoop();
+};
+
+/**
+ * アニメーションループ
+ * ブラウザにより、おおよそ1/60秒に１回呼び出される
+ */
+function animationLoop(){
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   draw();
   ctx.putImageData(imageData, 0, 0);
+  requestAnimationFrame(animationLoop);
 };
 
 /**
  * バッファーに対して一連の描画を行う。
  */
 var draw = function() {
-  /*
-   * 後面除去アルゴリズムで描画する３角形面を決定する
-   */
+  /* 光源を左右に移動する */
+  Il.x += Il.vx;
+  if (Il.x < -20000 || Il.x > 20000) {
+    Il.vx = -Il.vx;
+  }
+
+  /* 後面除去アルゴリズムで描画する３角形面を決定する */
   _tl = [];
   for(var i = 0; i < tl.length; i++) {
     var t = tl[i];
-    /* 原点と３角形面の重心を結ぶ視線ベクトルVを計算する */
-    var po = {x: 0, y: 0, z: 0};
     var p0 = t.p[0];
     var p1 = t.p[1];
     var p2 = t.p[2];
+
+    /* 原点と３角形面の重心を結ぶ視線ベクトルVを計算する */
+    var po = {x: 0, y: 0, z: 0};
     var pg = {x: (p0.x + p1.x + p2.x) / 3,
               y: (p0.y + p1.y + p2.y) / 3,
               z: (p0.z + p1.z + p2.z) / 3};
@@ -100,7 +117,7 @@ var draw = function() {
     
     /* 表を向いている３角形面の処理対象とする */
     if (innerProduct > 0) {
-      _tl.push(t);
+      _tl.push({p: t.p, r: t.r, g: t.g, b: t.b});
     }
   }
 
@@ -116,6 +133,36 @@ var draw = function() {
       return 0;
     }
   );
+
+  /*
+   * ３角形面の表面色(Id)を計算する
+   */
+  for (var i = 0; i < _tl.length; i++) {
+    var t = _tl[i];
+    var p0 = t.p[0];
+    var p1 = t.p[1];
+    var p2 = t.p[2];
+
+    /* 光源と３角形面の重心を結ぶ視線ベクトルLを計算する */
+    var pi = {x: Il.x, y: Il.y, z: Il.z};
+    var pg = {x: (p0.x + p1.x + p2.x) / 3,
+              y: (p0.y + p1.y + p2.y) / 3,
+              z: (p0.z + p1.z + p2.z) / 3};
+    var L = makeVector(pi, pg);
+
+    /* ３角形面の法線ベクトルNを計算する */
+    var v0 = makeVector(p0, p1);
+    var v1 = makeVector(p2, p0);
+    var N = calcCrossProduct(v0, v1);
+    
+    /* LとNのなすcosθを求める */
+    var cos = Math.max(calcInnerProduct(L, N) / (norm(L) * norm(N)), 0);
+    
+    /* ３角形面の色を計算する */
+    t.r = Math.floor(t.r * cos);
+    t.g = Math.floor(t.g * cos);
+    t.b = Math.floor(t.b * cos);
+  }
 
   /*
    * ３角形面を透視投影する
@@ -263,6 +310,16 @@ var makeVector = function(p1, p2) {
     z: p2.z - p1.z,
   };
 };
+
+/* ノルムを計算する
+ *
+ * @param {array} v ベクトル
+ *
+ * @return {float} ノルム
+ */
+var norm = function(v) {
+  return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+}
 
 /*
  * 外積を計算する
