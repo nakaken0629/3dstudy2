@@ -22,43 +22,43 @@ var imageData;
  * 座標の単位はcmとする。
  * 1cm = 20dot
  */
-var plist = [];
-plist[ 0] = {x:  1000, y:  1618, z:     0 + 30000};
-plist[ 1] = {x: -1000, y:  1618, z:     0 + 30000};
-plist[ 2] = {x:  1000, y: -1618, z:     0 + 30000};
-plist[ 3] = {x: -1000, y: -1618, z:     0 + 30000};
-plist[ 4] = {x:     0, y:  1000, z:  1618 + 30000};
-plist[ 5] = {x:     0, y: -1000, z:  1618 + 30000};
-plist[ 6] = {x:     0, y:  1000, z: -1618 + 30000};
-plist[ 7] = {x:     0, y: -1000, z: -1618 + 30000};
-plist[ 8] = {x:  1618, y:     0, z:  1000 + 30000};
-plist[ 9] = {x: -1618, y:     0, z:  1000 + 30000};
-plist[10] = {x:  1618, y:     0, z: -1000 + 30000};
-plist[11] = {x: -1618, y:     0, z: -1000 + 30000};
+var pl = [];
+pl[ 0] = {x:  1000, y:  1618, z:     0 + 30000};
+pl[ 1] = {x: -1000, y:  1618, z:     0 + 30000};
+pl[ 2] = {x:  1000, y: -1618, z:     0 + 30000};
+pl[ 3] = {x: -1000, y: -1618, z:     0 + 30000};
+pl[ 4] = {x:     0, y:  1000, z:  1618 + 30000};
+pl[ 5] = {x:     0, y: -1000, z:  1618 + 30000};
+pl[ 6] = {x:     0, y:  1000, z: -1618 + 30000};
+pl[ 7] = {x:     0, y: -1000, z: -1618 + 30000};
+pl[ 8] = {x:  1618, y:     0, z:  1000 + 30000};
+pl[ 9] = {x: -1618, y:     0, z:  1000 + 30000};
+pl[10] = {x:  1618, y:     0, z: -1000 + 30000};
+pl[11] = {x: -1618, y:     0, z: -1000 + 30000};
 
 /* 正２０面体の３角形面 */
-var tlist = [];
+var tl = [];
 var i = 0;
-tlist[i++] = {p: [plist[0], plist[ 1], plist[ 4]], rgb: {r: 255, g:   0, b:   0}};
-tlist[i++] = {p: [plist[0], plist[ 6], plist[ 1]], rgb: {r: 255, g:   0, b:   0}};
-tlist[i++] = {p: [plist[0], plist[ 4], plist[ 8]], rgb: {r: 255, g:   0, b:   0}};
-tlist[i++] = {p: [plist[0], plist[10], plist[ 6]], rgb: {r: 255, g:   0, b:   0}};
-tlist[i++] = {p: [plist[0], plist[ 8], plist[10]], rgb: {r: 255, g:   0, b:   0}};
-tlist[i++] = {p: [plist[1], plist[ 9], plist[ 4]], rgb: {r: 255, g:   0, b:   0}};
-tlist[i++] = {p: [plist[1], plist[ 6], plist[11]], rgb: {r: 255, g:   0, b:   0}};
-tlist[i++] = {p: [plist[1], plist[11], plist[ 9]], rgb: {r: 255, g:   0, b:   0}};
-tlist[i++] = {p: [plist[2], plist[ 5], plist[ 3]], rgb: {r: 255, g:   0, b:   0}};
-tlist[i++] = {p: [plist[2], plist[ 3], plist[ 7]], rgb: {r: 255, g:   0, b:   0}};
-tlist[i++] = {p: [plist[2], plist[ 8], plist[ 5]], rgb: {r: 255, g:   0, b:   0}};
-tlist[i++] = {p: [plist[2], plist[ 7], plist[10]], rgb: {r: 255, g:   0, b:   0}};
-tlist[i++] = {p: [plist[2], plist[10], plist[ 8]], rgb: {r: 255, g:   0, b:   0}};
-tlist[i++] = {p: [plist[3], plist[ 5], plist[ 9]], rgb: {r: 255, g:   0, b:   0}};
-tlist[i++] = {p: [plist[3], plist[11], plist[ 7]], rgb: {r: 255, g:   0, b:   0}};
-tlist[i++] = {p: [plist[3], plist[ 9], plist[11]], rgb: {r: 255, g:   0, b:   0}};
-tlist[i++] = {p: [plist[4], plist[ 5], plist[ 8]], rgb: {r: 255, g:   0, b:   0}};
-tlist[i++] = {p: [plist[4], plist[ 9], plist[ 5]], rgb: {r: 255, g:   0, b:   0}};
-tlist[i++] = {p: [plist[6], plist[10], plist[ 7]], rgb: {r: 255, g:   0, b:   0}};
-tlist[i++] = {p: [plist[6], plist[ 7], plist[11]], rgb: {r: 255, g:   0, b:   0}};
+tl[i++] = {p: [pl[0], pl[ 1], pl[ 4]], rgb: {r: 255, g:   0, b:   0}};
+tl[i++] = {p: [pl[0], pl[ 6], pl[ 1]], rgb: {r: 255, g:   0, b:   0}};
+tl[i++] = {p: [pl[0], pl[ 4], pl[ 8]], rgb: {r: 255, g:   0, b:   0}};
+tl[i++] = {p: [pl[0], pl[10], pl[ 6]], rgb: {r: 255, g:   0, b:   0}};
+tl[i++] = {p: [pl[0], pl[ 8], pl[10]], rgb: {r: 255, g:   0, b:   0}};
+tl[i++] = {p: [pl[1], pl[ 9], pl[ 4]], rgb: {r: 255, g:   0, b:   0}};
+tl[i++] = {p: [pl[1], pl[ 6], pl[11]], rgb: {r: 255, g:   0, b:   0}};
+tl[i++] = {p: [pl[1], pl[11], pl[ 9]], rgb: {r: 255, g:   0, b:   0}};
+tl[i++] = {p: [pl[2], pl[ 5], pl[ 3]], rgb: {r: 255, g:   0, b:   0}};
+tl[i++] = {p: [pl[2], pl[ 3], pl[ 7]], rgb: {r: 255, g:   0, b:   0}};
+tl[i++] = {p: [pl[2], pl[ 8], pl[ 5]], rgb: {r: 255, g:   0, b:   0}};
+tl[i++] = {p: [pl[2], pl[ 7], pl[10]], rgb: {r: 255, g:   0, b:   0}};
+tl[i++] = {p: [pl[2], pl[10], pl[ 8]], rgb: {r: 255, g:   0, b:   0}};
+tl[i++] = {p: [pl[3], pl[ 5], pl[ 9]], rgb: {r: 255, g:   0, b:   0}};
+tl[i++] = {p: [pl[3], pl[11], pl[ 7]], rgb: {r: 255, g:   0, b:   0}};
+tl[i++] = {p: [pl[3], pl[ 9], pl[11]], rgb: {r: 255, g:   0, b:   0}};
+tl[i++] = {p: [pl[4], pl[ 5], pl[ 8]], rgb: {r: 255, g:   0, b:   0}};
+tl[i++] = {p: [pl[4], pl[ 9], pl[ 5]], rgb: {r: 255, g:   0, b:   0}};
+tl[i++] = {p: [pl[6], pl[10], pl[ 7]], rgb: {r: 255, g:   0, b:   0}};
+tl[i++] = {p: [pl[6], pl[ 7], pl[11]], rgb: {r: 255, g:   0, b:   0}};
 
 /**
  * main関数。ここから始まる。
@@ -77,7 +77,7 @@ var draw = function() {
   /*
    * ペインタアルゴリズムで３角形面をソートする
    */
-  tlist.sort(
+  tl.sort(
     function(t0, t1) {
       z0 = (t0.p[0].z + t0.p[1].z + t0.p[2].z) / 3.0;
       z1 = (t1.p[0].z + t1.p[1].z + t1.p[2].z) / 3.0;
@@ -90,18 +90,18 @@ var draw = function() {
   /*
    * ３角形面を透視投影する
    */
-  var slist = [];
-  for (var i = 0; i < tlist.length; i++) {
-    var t = tlist[i];
+  var sl = [];
+  for (var i = 0; i < tl.length; i++) {
+    var t = tl[i];
     var s = projection(t.p[0], t.p[1], t.p[2], t.rgb);
-    slist.push(s);
+    sl.push(s);
   }
 
   /*
    * 透視投影された３角形面を描画する
    */
-  for (var i = 0; i < slist.length; i++) {
-    var s = slist[i];
+  for (var i = 0; i < sl.length; i++) {
+    var s = sl[i];
     triangle(s.sx1, s.sy1, s.sx2, s.sy2, s.sx3, s.sy3, s.red, s.green, s.blue);
   }
 }
@@ -152,11 +152,7 @@ var triangle = function(sx1, sy1, sx2, sy2, sx3, sy3, red, green, blue) {
     var xl = min(x1, x2, x3);
     var xr = max(x1, x2, x3);
     for(var x = xl; x <= xr; x++) {
-      if (x <= xl || x >= xr) {
-        pset(x, y, 0, 0, 0);
-      } else {
-        pset(x, y, red, green, blue);
-      }
+      pset(x, y, red, green, blue);
     }
   }
 };
