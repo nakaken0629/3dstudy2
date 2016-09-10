@@ -182,22 +182,19 @@ var projection = function(t) {
   var p1 = t.p[0];
   var p2 = t.p[1];
   var p3 = t.p[2];
-  var red = t.r;
-  var green = t.g;
-  var blue = t.b;
 
   /* スクリーン上に投影された座標を計算して描画する */
-  var s = [];
-  s.x1 = Math.floor(p1.x * 1200 / p1.z) + 320 / 2;
-  s.y1 = Math.floor(p1.y * 1200 / p1.z) + 200 / 2;
-  s.x2 = Math.floor(p2.x * 1200 / p2.z) + 320 / 2;
-  s.y2 = Math.floor(p2.y * 1200 / p2.z) + 200 / 2;
-  s.x3 = Math.floor(p3.x * 1200 / p3.z) + 320 / 2;
-  s.y3 = Math.floor(p3.y * 1200 / p3.z) + 200 / 2;
-  s.r = red;
-  s.g = green;
-  s.b = blue;
-  return s;
+  var st = [];
+  st.x1 = Math.floor(p1.x * 1200 / p1.z) + 320 / 2;
+  st.y1 = Math.floor(p1.y * 1200 / p1.z) + 200 / 2;
+  st.x2 = Math.floor(p2.x * 1200 / p2.z) + 320 / 2;
+  st.y2 = Math.floor(p2.y * 1200 / p2.z) + 200 / 2;
+  st.x3 = Math.floor(p3.x * 1200 / p3.z) + 320 / 2;
+  st.y3 = Math.floor(p3.y * 1200 / p3.z) + 200 / 2;
+  st.r = t.r;
+  st.g = t.g;
+  st.b = t.b;
+  return st;
 };
 
 /**
@@ -214,31 +211,33 @@ var projection = function(t) {
  * @param {number} blue  青色(0 - 255)
  */
 var triangle = function(st) {
-  var sx1 = st.x1;
-  var sy1 = st.y1;
-  var sx2 = st.x2;
-  var sy2 = st.y2;
-  var sx3 = st.x3;
-  var sy3 = st.y3;
-  var red = st.r;
-  var green = st.g;
-  var blue = st.b;
-
-  /* ミニマックス値を求める */
-  var xmin = Math.min(sx1, sx2, sx3);
-  var ymin = Math.min(sy1, sy2, sy3);
-  var xmax = Math.max(sx1, sx2, sx3);
-  var ymax = Math.max(sy1, sy2, sy3);
-
+  /* 頂点を配列に変換 */
+  var spl = [
+    {x: st.x1, y: st.y1},
+    {x: st.x2, y: st.y2},
+    {x: st.x3, y: st.y3}
+  ];
+  spl.sort(function(sp1, sp2) {
+    if (sp1.y < sp2.y) return -1;
+    if (sp1.y > sp2.y) return 1;
+    return 0;
+  });
   /* Y軸方向にスキャンする */
-  for(var y = ymin; y <= ymax; y++) {
-    var x1 = scan(sx1, sy1, sx2, sy2, y);
-    var x2 = scan(sx2, sy2, sx3, sy3, y);
-    var x3 = scan(sx3, sy3, sx1, sy1, y);
-    var xl = min(x1, x2, x3);
-    var xr = max(x1, x2, x3);
-    for(var x = xl; x <= xr; x++) {
-      pset(x, y, red, green, blue);
+  for(var y = spl[0].y; y <= spl[2].y; y++) {
+    if (y < spl[1].y) {
+      var x1 = scan(spl[0].x, spl[0].y, spl[1].x, spl[1].y, y);
+    } else {
+      var x1 = scan(spl[1].x, spl[1].y, spl[2].x, spl[2].y, y);
+    }
+    var x2 = scan(spl[0].x, spl[0].y, spl[2].x, spl[2].y, y);
+    if (x1 < x2) {
+      for(var x = x1; x <= x2; x++) {
+        pset(x, y, st.r, st.g, st.b);
+      }
+    } else {
+      for(var x = x1; x >= x2; x--) {
+        pset(x, y, st.r, st.g, st.b);
+      }
     }
   }
 };
