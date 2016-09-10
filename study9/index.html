@@ -213,30 +213,52 @@ var projection = function(t) {
 var triangle = function(st) {
   /* 頂点を配列に変換 */
   var spl = [
-    {x: st.x1, y: st.y1},
-    {x: st.x2, y: st.y2},
-    {x: st.x3, y: st.y3}
+    {x: st.x1, y: st.y1, r: 255, g:   0, b:   0},
+    {x: st.x2, y: st.y2, r:   0, g: 255, b:   0},
+    {x: st.x3, y: st.y3, r:   0, g:   0, b: 255} 
   ];
   spl.sort(function(sp1, sp2) {
     if (sp1.y < sp2.y) return -1;
     if (sp1.y > sp2.y) return 1;
     return 0;
   });
+
   /* Y軸方向にスキャンする */
   for(var y = spl[0].y; y <= spl[2].y; y++) {
     if (y < spl[1].y) {
       var x1 = scan(spl[0].x, spl[0].y, spl[1].x, spl[1].y, y);
+      var r1 = scan(spl[0].r, spl[0].y, spl[1].r, spl[1].y, y);
+      var g1 = scan(spl[0].g, spl[0].y, spl[1].g, spl[1].y, y);
+      var b1 = scan(spl[0].b, spl[0].y, spl[1].b, spl[1].y, y);
     } else {
       var x1 = scan(spl[1].x, spl[1].y, spl[2].x, spl[2].y, y);
+      var r1 = scan(spl[1].r, spl[1].y, spl[2].r, spl[2].y, y);
+      var g1 = scan(spl[1].g, spl[1].y, spl[2].g, spl[2].y, y);
+      var b1 = scan(spl[1].b, spl[1].y, spl[2].b, spl[2].y, y);
     }
     var x2 = scan(spl[0].x, spl[0].y, spl[2].x, spl[2].y, y);
+    var r2 = scan(spl[0].r, spl[0].y, spl[2].r, spl[2].y, y);
+    var g2 = scan(spl[0].g, spl[0].y, spl[2].g, spl[2].y, y);
+    var b2 = scan(spl[0].b, spl[0].y, spl[2].b, spl[2].y, y);
+    var r = r1;
+    var dr = (r2 - r1) / (x2 - x1);
+    var g = g1;
+    var dg = (g2 - g1) / (x2 - x1);
+    var b = b1;
+    var db = (b2 - b1) / (x2 - x1);
     if (x1 < x2) {
       for(var x = x1; x <= x2; x++) {
-        pset(x, y, st.r, st.g, st.b);
+        pset(x, y, r, g, b);
+        r += dr;
+        g += dg;
+        b += db;
       }
     } else {
       for(var x = x1; x >= x2; x--) {
-        pset(x, y, st.r, st.g, st.b);
+        pset(x, y, r, g, b);
+        r += dr;
+        g += dg;
+        b += db;
       }
     }
   }
