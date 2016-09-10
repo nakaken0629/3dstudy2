@@ -121,9 +121,7 @@ var draw = function() {
     }
   }
 
-  /*
-   * ペインタアルゴリズムで３角形面をソートする
-   */
+  /* ペインタアルゴリズムで３角形面をソートする */
   _tl.sort(
     function(t0, t1) {
       z0 = (t0.p[0].z + t0.p[1].z + t0.p[2].z) / 3.0;
@@ -134,9 +132,7 @@ var draw = function() {
     }
   );
 
-  /*
-   * ３角形面の表面色(Id)を計算する
-   */
+  /* ３角形面の表面色(Id)を計算する */
   for (var i = 0; i < _tl.length; i++) {
     var t = _tl[i];
     var p0 = t.p[0];
@@ -164,9 +160,7 @@ var draw = function() {
     t.b = Math.floor(t.b * cos);
   }
 
-  /*
-   * ３角形面を透視投影する
-   */
+  /* ３角形面を透視投影する */
   var sl = [];
   for (var i = 0; i < _tl.length; i++) {
     var t = _tl[i];
@@ -174,9 +168,7 @@ var draw = function() {
     sl.push(s);
   }
 
-  /*
-   * 透視投影された３角形面を描画する
-   */
+  /* 透視投影された３角形面を描画する */
   for (var i = 0; i < sl.length; i++) {
     var s = sl[i];
     triangle(s.sx1, s.sy1, s.sx2, s.sy2, s.sx3, s.sy3, s.red, s.green, s.blue);
