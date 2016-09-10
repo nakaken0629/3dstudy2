@@ -161,24 +161,31 @@ var draw = function() {
   }
 
   /* ３角形面を透視投影する */
-  var sl = [];
+  var stl = [];
   for (var i = 0; i < _tl.length; i++) {
     var t = _tl[i];
-    var s = projection(t.p[0], t.p[1], t.p[2], t.r, t.g, t.b);
-    sl.push(s);
+    var st = projection(t);
+    stl.push(st);
   }
 
   /* 透視投影された３角形面を描画する */
-  for (var i = 0; i < sl.length; i++) {
-    var s = sl[i];
-    triangle(s.sx1, s.sy1, s.sx2, s.sy2, s.sx3, s.sy3, s.red, s.green, s.blue);
+  for (var i = 0; i < stl.length; i++) {
+    var st = stl[i];
+    triangle(st.sx1, st.sy1, st.sx2, st.sy2, st.sx3, st.sy3, st.r, st.g, st.b);
   }
 };
 
 /**
  * 透視投影で３角形面を描画する
  */
-var projection = function(p1, p2, p3, red, green, blue) {
+var projection = function(t) {
+  var p1 = t.p[0];
+  var p2 = t.p[1];
+  var p3 = t.p[2];
+  var red = t.r;
+  var green = t.g;
+  var blue = t.b;
+
   /* スクリーン上に投影された座標を計算して描画する */
   var s = [];
   s.sx1 = Math.floor(p1.x * 1200 / p1.z) + 320 / 2;
@@ -187,9 +194,9 @@ var projection = function(p1, p2, p3, red, green, blue) {
   s.sy2 = Math.floor(p2.y * 1200 / p2.z) + 200 / 2;
   s.sx3 = Math.floor(p3.x * 1200 / p3.z) + 320 / 2;
   s.sy3 = Math.floor(p3.y * 1200 / p3.z) + 200 / 2;
-  s.red = red;
-  s.green = green;
-  s.blue = blue;
+  s.r = red;
+  s.g = green;
+  s.b = blue;
   return s;
 };
 
