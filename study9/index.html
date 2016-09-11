@@ -99,6 +99,11 @@ var averageVector = function(vl) {
   };
 };
 
+/* 全ての頂点に共通の色 */
+var r =   0;
+var g = 255;
+var b =   0;
+
 /*
  * 正２０面体の頂点座標。
  * 座標の単位はcmとする。
@@ -121,26 +126,26 @@ pl[11] = {x: -1618, y:     0, z: -1000 + 30000};
 /* 正２０面体の３角形面 */
 var tl = [];
 var i = 0;
-tl[i++] = {pl: [pl[0], pl[ 1], pl[ 4]], r: 255, g:   0, b:   0};
-tl[i++] = {pl: [pl[0], pl[ 6], pl[ 1]], r: 255, g:   0, b:   0};
-tl[i++] = {pl: [pl[0], pl[ 4], pl[ 8]], r: 255, g:   0, b:   0};
-tl[i++] = {pl: [pl[0], pl[10], pl[ 6]], r: 255, g:   0, b:   0};
-tl[i++] = {pl: [pl[0], pl[ 8], pl[10]], r: 255, g:   0, b:   0};
-tl[i++] = {pl: [pl[1], pl[ 9], pl[ 4]], r: 255, g:   0, b:   0};
-tl[i++] = {pl: [pl[1], pl[ 6], pl[11]], r: 255, g:   0, b:   0};
-tl[i++] = {pl: [pl[1], pl[11], pl[ 9]], r: 255, g:   0, b:   0};
-tl[i++] = {pl: [pl[2], pl[ 5], pl[ 3]], r: 255, g:   0, b:   0};
-tl[i++] = {pl: [pl[2], pl[ 3], pl[ 7]], r: 255, g:   0, b:   0};
-tl[i++] = {pl: [pl[2], pl[ 8], pl[ 5]], r: 255, g:   0, b:   0};
-tl[i++] = {pl: [pl[2], pl[ 7], pl[10]], r: 255, g:   0, b:   0};
-tl[i++] = {pl: [pl[2], pl[10], pl[ 8]], r: 255, g:   0, b:   0};
-tl[i++] = {pl: [pl[3], pl[ 5], pl[ 9]], r: 255, g:   0, b:   0};
-tl[i++] = {pl: [pl[3], pl[11], pl[ 7]], r: 255, g:   0, b:   0};
-tl[i++] = {pl: [pl[3], pl[ 9], pl[11]], r: 255, g:   0, b:   0};
-tl[i++] = {pl: [pl[4], pl[ 5], pl[ 8]], r: 255, g:   0, b:   0};
-tl[i++] = {pl: [pl[4], pl[ 9], pl[ 5]], r: 255, g:   0, b:   0};
-tl[i++] = {pl: [pl[6], pl[10], pl[ 7]], r: 255, g:   0, b:   0};
-tl[i++] = {pl: [pl[6], pl[ 7], pl[11]], r: 255, g:   0, b:   0};
+tl[i++] = {pl: [pl[0], pl[ 1], pl[ 4]]};
+tl[i++] = {pl: [pl[0], pl[ 6], pl[ 1]]};
+tl[i++] = {pl: [pl[0], pl[ 4], pl[ 8]]};
+tl[i++] = {pl: [pl[0], pl[10], pl[ 6]]};
+tl[i++] = {pl: [pl[0], pl[ 8], pl[10]]};
+tl[i++] = {pl: [pl[1], pl[ 9], pl[ 4]]};
+tl[i++] = {pl: [pl[1], pl[ 6], pl[11]]};
+tl[i++] = {pl: [pl[1], pl[11], pl[ 9]]};
+tl[i++] = {pl: [pl[2], pl[ 5], pl[ 3]]};
+tl[i++] = {pl: [pl[2], pl[ 3], pl[ 7]]};
+tl[i++] = {pl: [pl[2], pl[ 8], pl[ 5]]};
+tl[i++] = {pl: [pl[2], pl[ 7], pl[10]]};
+tl[i++] = {pl: [pl[2], pl[10], pl[ 8]]};
+tl[i++] = {pl: [pl[3], pl[ 5], pl[ 9]]};
+tl[i++] = {pl: [pl[3], pl[11], pl[ 7]]};
+tl[i++] = {pl: [pl[3], pl[ 9], pl[11]]};
+tl[i++] = {pl: [pl[4], pl[ 5], pl[ 8]]};
+tl[i++] = {pl: [pl[4], pl[ 9], pl[ 5]]};
+tl[i++] = {pl: [pl[6], pl[10], pl[ 7]]};
+tl[i++] = {pl: [pl[6], pl[ 7], pl[11]]};
 
 /* ３角形面の法線ベクトル */
 for(var i = 0; i < tl.length; i++) {
@@ -153,7 +158,6 @@ for(var i = 0; i < tl.length; i++) {
 }
 
 /* 頂点の法線ベクトル */
-var Nl = [pl.length];
 for(var i = 0; i < pl.length; i++) {
   var p = pl[i];
   var vl = [];
@@ -166,11 +170,11 @@ for(var i = 0; i < pl.length; i++) {
       }
     }
   }
-  Nl[i] = averageVector(vl);
+  pl[i].N = averageVector(vl);
 }
 
 /* 光線。スクリーン座標でいうと、右上の少し手前から照らしている */
-var Il = {x: 20000.0, y: -10000.0, z: 0.0, r: 255, g: 255, b: 255, vx: -500}
+var Il = {x: 0.0, y: -20000.0, z: 0.0, r: 255, g: 255, b: 255, vx: -1000}
 
 /**
  * main関数。ここから始まる。
@@ -197,7 +201,7 @@ function animationLoop(){
 var draw = function() {
   /* 光源を左右に移動する */
   Il.x += Il.vx;
-  if (Il.x < -20000 || Il.x > 20000) {
+  if (Il.x < -60000 || Il.x > 60000) {
     Il.vx = -Il.vx;
   }
 
@@ -224,7 +228,7 @@ var draw = function() {
     
     /* 表を向いている３角形面の処理対象とする */
     if (innerProduct > 0) {
-      _tl.push({pl: t.pl, r: t.r, g: t.g, b: t.b, N: t.N});
+      _tl.push({pl: t.pl, N: t.N});
     }
   }
 
@@ -239,30 +243,24 @@ var draw = function() {
     }
   );
 
-  /* ３角形面の表面色(Id)を計算する */
-  for (var i = 0; i < _tl.length; i++) {
-    var t = _tl[i];
-    var p0 = t.pl[0];
-    var p1 = t.pl[1];
-    var p2 = t.pl[2];
+  /* 頂点の表面色(Id)を計算する */
+  for (var i = 0; i < pl.length; i++) {
+    var p = pl[i];
 
-    /* 光源と３角形面の重心を結ぶ光線ベクトルLを計算する */
+    /* 原点と頂点を結ぶ光線ベクトルLを計算する */
     var pi = {x: Il.x, y: Il.y, z: Il.z};
-    var pg = {x: (p0.x + p1.x + p2.x) / 3,
-              y: (p0.y + p1.y + p2.y) / 3,
-              z: (p0.z + p1.z + p2.z) / 3};
-    var L = makeVector(pi, pg);
+    var L = makeVector(pi, p);
 
-    /* ３角形面の法線ベクトルNを取得する */
-    var N = t.N;
+    /* 頂点の法線ベクトルNを取得する */
+    var N = pl[i].N;
     
     /* LとNのなすcosθを求める */
     var cos = Math.max(calcInnerProduct(L, N) / (norm(L) * norm(N)), 0);
     
-    /* ３角形面の色を計算する */
-    t.r = Math.floor(t.r * cos);
-    t.g = Math.floor(t.g * cos);
-    t.b = Math.floor(t.b * cos);
+    /* 頂点の色を計算する */
+    p.r = Math.floor(r * cos);
+    p.g = Math.floor(g * cos);
+    p.b = Math.floor(b * cos);
   }
 
   /* ３角形面を透視投影する */
@@ -292,19 +290,19 @@ var projection = function(t) {
   var st = [];
   st.x1 = Math.floor(p1.x * 1200 / p1.z) + 320 / 2;
   st.y1 = Math.floor(p1.y * 1200 / p1.z) + 200 / 2;
-  st.r1 = t.r;
-  st.g1 = t.g;
-  st.b1 = t.b;
+  st.r1 = t.pl[0].r;
+  st.g1 = t.pl[0].g;
+  st.b1 = t.pl[0].b;
   st.x2 = Math.floor(p2.x * 1200 / p2.z) + 320 / 2;
   st.y2 = Math.floor(p2.y * 1200 / p2.z) + 200 / 2;
-  st.r2 = t.r;
-  st.g2 = t.g;
-  st.b2 = t.b;
+  st.r2 = t.pl[1].r;
+  st.g2 = t.pl[1].g;
+  st.b2 = t.pl[1].b;
   st.x3 = Math.floor(p3.x * 1200 / p3.z) + 320 / 2;
   st.y3 = Math.floor(p3.y * 1200 / p3.z) + 200 / 2;
-  st.r3 = t.r;
-  st.g3 = t.g;
-  st.b3 = t.b;
+  st.r3 = t.pl[2].r;
+  st.g3 = t.pl[2].g;
+  st.b3 = t.pl[2].b;
   return st;
 };
 
@@ -365,11 +363,12 @@ var triangle = function(st) {
         b += db;
       }
     } else {
+      /* TODO: この処理がおかしい */
       for(var x = x1; x >= x2; x--) {
         pset(x, y, r, g, b);
-        r += dr;
-        g += dg;
-        b += db;
+        r -= dr;
+        g -= dg;
+        b -= db;
       }
     }
   }
