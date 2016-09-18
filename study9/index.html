@@ -282,53 +282,45 @@ var draw = function() {
  * 透視投影で３角形面を描画する
  */
 var projection = function(t) {
-  var p1 = t.pl[0];
-  var p2 = t.pl[1];
-  var p3 = t.pl[2];
+  var p0 = t.pl[0];
+  var p1 = t.pl[1];
+  var p2 = t.pl[2];
 
   /* スクリーン上に投影された座標を計算して描画する */
   var st = [];
+  st.x0 = Math.floor(p0.x * 1200 / p0.z) + 320 / 2;
+  st.y0 = Math.floor(p0.y * 1200 / p0.z) + 200 / 2;
+  st.r0 = t.pl[0].r;
+  st.g0 = t.pl[0].g;
+  st.b0 = t.pl[0].b;
   st.x1 = Math.floor(p1.x * 1200 / p1.z) + 320 / 2;
   st.y1 = Math.floor(p1.y * 1200 / p1.z) + 200 / 2;
-  st.r1 = t.pl[0].r;
-  st.g1 = t.pl[0].g;
-  st.b1 = t.pl[0].b;
+  st.r1 = t.pl[1].r;
+  st.g1 = t.pl[1].g;
+  st.b1 = t.pl[1].b;
   st.x2 = Math.floor(p2.x * 1200 / p2.z) + 320 / 2;
   st.y2 = Math.floor(p2.y * 1200 / p2.z) + 200 / 2;
-  st.r2 = t.pl[1].r;
-  st.g2 = t.pl[1].g;
-  st.b2 = t.pl[1].b;
-  st.x3 = Math.floor(p3.x * 1200 / p3.z) + 320 / 2;
-  st.y3 = Math.floor(p3.y * 1200 / p3.z) + 200 / 2;
-  st.r3 = t.pl[2].r;
-  st.g3 = t.pl[2].g;
-  st.b3 = t.pl[2].b;
+  st.r2 = t.pl[2].r;
+  st.g2 = t.pl[2].g;
+  st.b2 = t.pl[2].b;
   return st;
 };
 
 /**
  * 素朴なアルゴリズムで三角形面を描く
  *
- * @param {number} sx1 X1座標(0 - 319)
- * @param {number} sy1 Y1座標(0 - 199)
- * @param {number} sx2 X2座標(0 - 319)
- * @param {number} sy2 Y2座標(0 - 199)
- * @param {number} sx3 X3座標(0 - 319)
- * @param {number} sy3 Y3座標(0 - 199)
- * @param {number} red   赤色(0 - 255)
- * @param {number} green 緑色(0 - 255)
- * @param {number} blue  青色(0 - 255)
+ * @param {Array} st ３角形面のスクリーン座標に投影された情報
  */
 var triangle = function(st) {
   /* 頂点を配列に変換 */
   var spl = [
+    {x: st.x0, y: st.y0, r: st.r0, g: st.g0, b: st.b0},
     {x: st.x1, y: st.y1, r: st.r1, g: st.g1, b: st.b1},
-    {x: st.x2, y: st.y2, r: st.r2, g: st.g2, b: st.b2},
-    {x: st.x3, y: st.y3, r: st.r3, g: st.g3, b: st.b3} 
+    {x: st.x2, y: st.y2, r: st.r2, g: st.g2, b: st.b2} 
   ];
-  spl.sort(function(sp1, sp2) {
-    if (sp1.y < sp2.y) return -1;
-    if (sp1.y > sp2.y) return 1;
+  spl.sort(function(sp0, sp1) {
+    if (sp0.y < sp1.y) return -1;
+    if (sp0.y > sp1.y) return 1;
     return 0;
   });
 
