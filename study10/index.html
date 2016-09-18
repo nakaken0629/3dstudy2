@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ja">
+ <head>
+  <meta charset="UTF-8" />
+  <title>10. Phongのスムーズシェーディング</title>
+ </head>
+ <body>
+  <h1>10. Phongのスムーズシェーディング</h1>
+  <!-- 1dot = 2x2 pixelとする。つまり320x200 dotの描画エリアとなる -->
+  <canvas id="myCanvas"
+          width="640"
+          height="400"
+          style="border: solid 2px black; " />
+<script>
+
+var canvas;
+var ctx;
+var imageData;
+
+// ================
+//    共通関数群
+// ================
+
+/*
+ * ２点を結ぶベクトルを生成する
+ * 
+ * @param {array} p1 起点
+ * @param {array} p2 終点
+ *
+ * @return {array} ベクトル
+ */
+var makeVector = function(p1, p2) {
+  return {
+    x: p2.x - p1.x,
+    y: p2.y - p1.y,
+    z: p2.z - p1.z,
+  };
+};
+
+/* ノルムを計算する
+ *
+ * @param {array} v ベクトル
+ *
+ * @return {float} ノルム
+ */
+var norm = function(v) {
+  return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+}
+
+/*
+ * 外積を計算する
+ *
+ * @param {array} v1 ベクトル１
+ * @param {array} v2 ベクトル２
+ *
+ * @return {array} 外積
+ */
+var calcCrossProduct = function(v1, v2) {
+  return {
+    x: v1.y * v2.z - v1.z * v2.y,
+    y: v1.z * v2.x - v1.x * v2.z,
+    z: v1.x * v2.y - v1.y * v2.x,
+  };
+};
+
+/*
+ * 内積を計算する
+ *
+ * @param {array} v1 ベクトル１
+ * @param {array} v2 ベクトル２
+ *
+ * @return {float} 内積
+ */
+var calcInnerProduct = function(v1, v2) {
+  return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+};
+
+/*
+ * ベクトルの平均を返す
+ *
+ * @param {array} vl ベクトルのリスト
+ *
+ * @return {array} 平均化されたベクトル
+ */
+var averageVector = function(vl) {
+  var x = 0;
+  var y = 0;
+  var z = 0;
+  for (var i = 0; i < vl.length; i++) {
+    v = vl[i];
+    x += v.x;
+    y += v.y;
+    z += v.z;
+  }
+  return {
+    x: x / vl.length,
+    y: y / vl.length,
+    z: z / vl.length
+  };
+};
+
+/* 全ての頂点に共通の色 */
+var r =   0;
+var g = 255;
+var b =   0;
+
+/*
+ * 正２０面体の頂点座標。
+ * 座標の単位はcmとする。
+ * 1cm = 20dot
+ */
+var pl = [];
+pl[ 0] = {x:  1000, y:  1618, z:     0 + 30000};
+pl[ 1] = {x: -1000, y:  1618, z:     0 + 30000};
+pl[ 2] = {x:  1000, y: -1618, z:     0 + 30000};
+pl[ 3] = {x: -1000, y: -1618, z:     0 + 30000};
+pl[ 4] = {x:     0, y:  1000, z:  1618 + 30000};
+pl[ 5] = {x:     0, y: -1000, z:  1618 + 30000};
+pl[ 6] = {x:     0, y:  1000, z: -1618 + 30000};
+pl[ 7] = {x:     0, y: -1000, z: -1618 + 30000};
+pl[ 8] = {x:  1618, y:     0, z:  1000 + 30000};
+pl[ 9] = {x: -1618, y:     0, z:  1000 + 30000};
+pl[10] = {x:  1618, y:     0, z: -1000 + 30000};
+pl[11] = {x: -1618, y:     0, z: -1000 + 30000};
+
+/* 正２０面体の３角形面 */
+var tl = [];
+var i = 0;
+tl[i++] = {pl: [pl[0], pl[ 1], pl[ 4]]};
+tl[i++] = {pl: [pl[0], pl[ 6], pl[ 1]]};
+tl[i++] = {pl: [pl[0], pl[ 4], pl[ 8]]};
+tl[i++] = {pl: [pl[0], pl[10], pl[ 6]]};
+tl[i++] = {pl: [pl[0], pl[ 8], pl[10]]};
+tl[i++] = {pl: [pl[1], pl[ 9], pl[ 4]]};
+tl[i++] = {pl: [pl[1], pl[ 6], pl[11]]};
+tl[i++] = {pl: [pl[1], pl[11], pl[ 9]]};
+tl[i++] = {pl: [pl[2], pl[ 5], pl[ 3]]};
+tl[i++] = {pl: [pl[2], pl[ 3], pl[ 7]]};
+tl[i++] = {pl: [pl[2], pl[ 8], pl[ 5]]};
+tl[i++] = {pl: [pl[2], pl[ 7], pl[10]]};
+tl[i++] = {pl: [pl[2], pl[10], pl[ 8]]};
+tl[i++] = {pl: [pl[3], pl[ 5], pl[ 9]]};
+tl[i++] = {pl: [pl[3], pl[11], pl[ 7]]};
+tl[i++] = {pl: [pl[3], pl[ 9], pl[11]]};
+tl[i++] = {pl: [pl[4], pl[ 5], pl[ 8]]};
+tl[i++] = {pl: [pl[4], pl[ 9], pl[ 5]]};
+tl[i++] = {pl: [pl[6], pl[10], pl[ 7]]};
+tl[i++] = {pl: [pl[6], pl[ 7], pl[11]]};
+
+/* ３角形面の法線ベクトル */
+for(var i = 0; i < tl.length; i++) {
+  var p0 = tl[i].pl[0];
+  var p1 = tl[i].pl[1];
+  var p2 = tl[i].pl[2];
+  var v0 = makeVector(p0, p1);
+  var v1 = makeVector(p2, p0);
+  tl[i].N = calcCrossProduct(v0, v1);
+}
+
+/* 頂点の法線ベクトル */
+for(var i = 0; i < pl.length; i++) {
+  var p = pl[i];
+  var vl = [];
+  for(var j = 0; j < tl.length; j++) {
+    var t = tl[j];
+    for(var k = 0; k < t.pl.length; k++) {
+      if (p == t.pl[k]) {
+        vl.push(t.N);
+        break;
+      }
+    }
+  }
+  pl[i].N = averageVector(vl);
+}
+
+/* 光線。スクリーン座標でいうと、右上の少し手前から照らしている */
+var Il = {x: 0.0, y: -20000.0, z: 0.0, r: 255, g: 255, b: 255, vx: -1000}
+
+/**
+ * main関数。ここから始まる。
+ */
+var main = function() {
+  animationLoop();
+};
+
+/**
+ * アニメーションループ
+ * ブラウザにより、おおよそ1/60秒に１回呼び出される
+ */
+function animationLoop(){
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  draw();
+  ctx.putImageData(imageData, 0, 0);
+  requestAnimationFrame(animationLoop);
+};
+
+/**
+ * バッファーに対して一連の描画を行う。
+ */
+var draw = function() {
+  /* 光源を左右に移動する */
+  Il.x += Il.vx;
+  if (Il.x < -60000 || Il.x > 60000) {
+    Il.vx = -Il.vx;
+  }
+
+  /* 後面除去アルゴリズムで描画する３角形面を決定する */
+  _tl = [];
+  for(var i = 0; i < tl.length; i++) {
+    var t = tl[i];
+    var p0 = t.pl[0];
+    var p1 = t.pl[1];
+    var p2 = t.pl[2];
+
+    /* 原点と３角形面の重心を結ぶ視線ベクトルVを計算する */
+    var po = {x: 0, y: 0, z: 0};
+    var pg = {x: (p0.x + p1.x + p2.x) / 3,
+              y: (p0.y + p1.y + p2.y) / 3,
+              z: (p0.z + p1.z + p2.z) / 3};
+    var V = makeVector(po, pg);
+
+    /* ３角形面の法線ベクトルNを取得する */
+    var N = t.N;
+    
+    /* 視線ベクトルVと法線ベクトルNの内積を計算する */
+    var innerProduct = calcInnerProduct(V, N);
+    
+    /* 表を向いている３角形面の処理対象とする */
+    if (innerProduct > 0) {
+      _tl.push({pl: t.pl, N: t.N});
+    }
+  }
+
+  /* ペインタアルゴリズムで３角形面をソートする */
+  _tl.sort(
+    function(t0, t1) {
+      z0 = (t0.pl[0].z + t0.pl[1].z + t0.pl[2].z) / 3.0;
+      z1 = (t1.pl[0].z + t1.pl[1].z + t1.pl[2].z) / 3.0;
+      if (z0 < z1) return 1;
+      if (z0 > z1) return -1;
+      return 0;
+    }
+  );
+
+  /* 頂点の表面色(Id)を計算する */
+  for (var i = 0; i < pl.length; i++) {
+    var p = pl[i];
+
+    /* 原点と頂点を結ぶ光線ベクトルLを計算する */
+    var pi = {x: Il.x, y: Il.y, z: Il.z};
+    var L = makeVector(pi, p);
+
+    /* 頂点の法線ベクトルNを取得する */
+    var N = pl[i].N;
+    
+    /* LとNのなすcosθを求める */
+    var cos = Math.max(calcInnerProduct(L, N) / (norm(L) * norm(N)), 0);
+    
+    /* 頂点の色を計算する */
+    p.r = Math.floor(r * cos);
+    p.g = Math.floor(g * cos);
+    p.b = Math.floor(b * cos);
+  }
+
+  /* ３角形面を透視投影する */
+  var stl = [];
+  for (var i = 0; i < _tl.length; i++) {
+    var t = _tl[i];
+    var st = projection(t);
+    stl.push(st);
+  }
+
+  /* 透視投影された３角形面を描画する */
+  for (var i = 0; i < stl.length; i++) {
+    var st = stl[i];
+    triangle(st);
+  }
+};
+
+/**
+ * 透視投影で３角形面を描画する
+ */
+var projection = function(t) {
+  var p0 = t.pl[0];
+  var p1 = t.pl[1];
+  var p2 = t.pl[2];
+
+  /* スクリーン上に投影された座標を計算して描画する */
+  var st = [];
+  st.x0 = Math.floor(p0.x * 1200 / p0.z) + 320 / 2;
+  st.y0 = Math.floor(p0.y * 1200 / p0.z) + 200 / 2;
+  st.r0 = t.pl[0].r;
+  st.g0 = t.pl[0].g;
+  st.b0 = t.pl[0].b;
+  st.x1 = Math.floor(p1.x * 1200 / p1.z) + 320 / 2;
+  st.y1 = Math.floor(p1.y * 1200 / p1.z) + 200 / 2;
+  st.r1 = t.pl[1].r;
+  st.g1 = t.pl[1].g;
+  st.b1 = t.pl[1].b;
+  st.x2 = Math.floor(p2.x * 1200 / p2.z) + 320 / 2;
+  st.y2 = Math.floor(p2.y * 1200 / p2.z) + 200 / 2;
+  st.r2 = t.pl[2].r;
+  st.g2 = t.pl[2].g;
+  st.b2 = t.pl[2].b;
+  return st;
+};
+
+/**
+ * 素朴なアルゴリズムで三角形面を描く
+ *
+ * @param {Array} st ３角形面のスクリーン座標に投影された情報
+ */
+var triangle = function(st) {
+  /* 頂点を配列に変換 */
+  var spl = [
+    {x: st.x0, y: st.y0, r: st.r0, g: st.g0, b: st.b0},
+    {x: st.x1, y: st.y1, r: st.r1, g: st.g1, b: st.b1},
+    {x: st.x2, y: st.y2, r: st.r2, g: st.g2, b: st.b2} 
+  ];
+  spl.sort(function(sp0, sp1) {
+    if (sp0.y < sp1.y) return -1;
+    if (sp0.y > sp1.y) return 1;
+    return 0;
+  });
+
+  /* Y軸方向にスキャンする */
+  for(var y = spl[0].y; y <= spl[2].y; y++) {
+    if (y < spl[1].y) {
+      var x1 = scan(spl[0].x, spl[0].y, spl[1].x, spl[1].y, y);
+      var r1 = scan(spl[0].r, spl[0].y, spl[1].r, spl[1].y, y);
+      var g1 = scan(spl[0].g, spl[0].y, spl[1].g, spl[1].y, y);
+      var b1 = scan(spl[0].b, spl[0].y, spl[1].b, spl[1].y, y);
+    } else {
+      var x1 = scan(spl[1].x, spl[1].y, spl[2].x, spl[2].y, y);
+      var r1 = scan(spl[1].r, spl[1].y, spl[2].r, spl[2].y, y);
+      var g1 = scan(spl[1].g, spl[1].y, spl[2].g, spl[2].y, y);
+      var b1 = scan(spl[1].b, spl[1].y, spl[2].b, spl[2].y, y);
+    }
+    var x2 = scan(spl[0].x, spl[0].y, spl[2].x, spl[2].y, y);
+    var r2 = scan(spl[0].r, spl[0].y, spl[2].r, spl[2].y, y);
+    var g2 = scan(spl[0].g, spl[0].y, spl[2].g, spl[2].y, y);
+    var b2 = scan(spl[0].b, spl[0].y, spl[2].b, spl[2].y, y);
+    var r = r1;
+    var dr = (r2 - r1) / (x2 - x1);
+    var g = g1;
+    var dg = (g2 - g1) / (x2 - x1);
+    var b = b1;
+    var db = (b2 - b1) / (x2 - x1);
+    if (x1 < x2) {
+      for(var x = x1; x <= x2; x++) {
+        pset(x, y, r, g, b);
+        r += dr;
+        g += dg;
+        b += db;
+      }
+    } else {
+      for(var x = x1; x >= x2; x--) {
+        pset(x, y, r, g, b);
+        r -= dr;
+        g -= dg;
+        b -= db;
+      }
+    }
+  }
+};
+
+/**
+ * 線分とスキャンラインとの交点のX座標を求める
+ *
+ * @param {number} sx1 線分のX1座標(0 - 319)
+ * @param {number} sy1 線分のY1座標(0 - 199)
+ * @param {number} sx2 線分のX2座標(0 - 319)
+ * @param {number} sy2 線分のY2座標(0 - 199)
+ * @param {number} y スキャンラインのY座標(0 - 199)
+ *
+ * @return {number} 線分とスキャンラインとの交点のX座標
+ *                  yがsy1とsy2の間にない場合は-1
+ */
+var scan = function(sx1, sy1, sx2, sy2, y) {
+  /* sy1 > sy2の場合、始点と終点を入れ替える */
+  if (sy1 > sy2) {
+    sx1 = [sx2, sx2 = sx1][0];  /* sx1とsx2を入れ替える */
+    sy1 = [sy2, sy2 = sy1][0];  /* sy1とsy2を入れ替える */
+  }
+
+  /* yがsy1とsy2の間にない場合は-1を返す */
+  if (y < sy1 || sy2 < y) {
+    return -1;
+  }
+
+  /* 線分とスキャンラインとの交点のX座標を計算して返す */
+  if (sy1 == sy2) {
+    /* 0除算を防ぐ */
+    return sx1;
+  }
+  var x = (sx2 - sx1 + 0.0) / (sy2 - sy1) * (y - sy1) + sx1;
+  return Math.round(x);
+};
+
+/**
+ * 点を描く
+ *
+ * @param {number} sx X座標(0 - 319)
+ * @param {number} sy Y座標(0 - 199)
+ * @param {number} red   赤色(0 - 255)
+ * @param {number} green 緑色(0 - 255)
+ * @param {number} blue  青色(0 - 255)
+ */
+var pset = function(sx, sy, red, green, blue) {
+  /* 1pxでは見づらいため、2pxとしている */
+  var width = imageData.width;
+  var pixels = imageData.data;
+  for(var x = sx * 2; x < sx * 2 + 2; x++) {
+    for(var y = sy * 2; y < sy * 2 + 2; y++) {
+      var index = (x + y * width) * 4;
+      pixels[index + 0] = red;
+      pixels[index + 1] = green;
+      pixels[index + 2] = blue;
+      pixels[index + 3] = 255;
+    }
+  }
+};
+
+/**
+ * htmlのロードが終了したら実行される
+ */
+window.onload = function() {
+  /* javascriptでcanvasを使うための決まり文句 */
+  canvas = document.getElementById("myCanvas");
+  ctx = canvas.getContext("2d");
+  main();
+};
+
+</script>
+ </body>
+</html>
+
