@@ -32,6 +32,8 @@ var t1 = {
     {x: -1000, y: 1200, z: 800},
   ],
   rgb: {r: 255, g:   0, b:   0},
+  vx: -5,
+  vy:  0,
   vz: -5,
 };
 
@@ -43,6 +45,8 @@ var t2 = {
     {x: 2000, y: -500, z: 800},
   ],
   rgb: {r:   0, g: 255, b:   0},
+  vx:  0,
+  vy: -5,
   vz: -5,
 };
 
@@ -50,10 +54,12 @@ var t2 = {
 var t3 = {
   p: [
     {x: 2400, y: -200, z: 800},
-    {x:  200, y:  500, z: 300},
+    {x:  500, y:  500, z: 300},
     {x: 2400, y: 1200, z: 800},
   ],
   rgb: {r:   0, g:   0, b: 255},
+  vx: 5,
+  vy: 0,
   vz: 5,
 };
 
@@ -61,34 +67,16 @@ var t3 = {
 var t4 = {
   p: [
     {x: -600, y: 1500, z: 800},
-    {x:  800, y:  200, z: 550},
+    {x:  800, y:  300, z: 550},
     {x: 2000, y: 1500, z: 800},
   ],
   rgb: {r: 255, g: 255, b:   0},
+  vx: 0,
+  vy: 5,
   vz: 5,
 };
 
-/* 灰色のカバー */
-var t5 = {
-  p: [
-    {x:    0, y:    0, z: 550},
-    {x: 1500, y:    0, z: 550},
-    {x:    0, y: 1000, z: 550},
-  ],
-  rgb: {r: 128, g:128, b: 128},
-  vz: 0,
-};
-var t6 = {
-  p: [
-    {x: 1500, y:    0, z: 550},
-    {x:    0, y: 1000, z: 550},
-    {x: 1500, y: 1000, z: 550},
-  ],
-  rgb: {r: 128, g:128, b: 128},
-  vz: 0,
-};
-
-var tlist = [t1, t2, t3, t4, t5, t6];
+var tlist = [t1, t2, t3, t4];
 
 /**
  * main関数。ここから始まる。
@@ -119,9 +107,13 @@ var draw = function() {
    */
   for (var i = 0; i < tlist.length; i++) {
     var t = tlist[i];
+    t.p[1].x += t.vx;
+    t.p[1].y += t.vy;
     t.p[1].z += t.vz;
     var z = t.p[1].z;
     if (z < 300 || z > 800) {
+      t.vx = -t.vx;
+      t.vy = -t.vy;
       t.vz = -t.vz;
     }
   }
@@ -137,11 +129,83 @@ var draw = function() {
   }
 
   /*
-   * 透視投影された３角形面を描画する
+   * スキャンライン法で隠面処理を行って三角形面を描画する
    */
-  for (var i = 0; i < slist.length; i++) {
-    var s = slist[i];
-    triangle(s.sx1, s.sy1, s.sx2, s.sy2, s.sx3, s.sy3, s.red, s.green, s.blue);
+  for (var y = 0; y < 200; y++) {
+    var dlist = [];
+    for (var x = 0; x < 320; x++) {
+      dlist[x] = 10000000;
+    }
+    for (var i = 0; i < slist.length; i++) {
+      var s = slist[i];
+      var sx1 = s.sx1;
+      var sy1 = s.sy1;
+      var sz1 = s.z1;
+      var sx2 = s.sx2;
+      var sy2 = s.sy2;
+      var sz2 = s.z2;
+      var sx3 = s.sx3;
+      var sy3 = s.sy3;
+      var sz3 = s.z3;
+      var red = s.red;
+      var green = s.green;
+      var blue = s.blue;
+
+      /* ミニマックス値を求める */
+      var xmin = Math.min(sx1, sx2, sx3);
+      var ymin = Math.min(sy1, sy2, sy3);
+
+      var x1 = scan(sx1, sy1, sx2, sy2, y);
+      var x2 = scan(sx2, sy2, sx3, sy3, y);
+      var x3 = scan(sx3, sy3, sx1, sy1, y);
+      var z1 = scan(sz1, sy1, sz2, sy2, y);
+      var z2 = scan(sz2, sy2, sz3, sy3, y);
+      var z3 = scan(sz3, sy3, sz1, sy1, y);
+      if (x1 == -1) {
+        if (x2 < x3) {
+          var xl = x2;
+          var zl = z2;
+          var xr = x3;
+          var zr = z3;
+        } else {
+          var xl = x3;
+          var zl = z3;
+          var xr = x2;
+          var zr = z2;
+        }
+      } else if (x2 == -1) {
+        if (x3 < x1) {
+          var xl = x3;
+          var zl = z3;
+          var xr = x1;
+          var zr = z1;
+        } else {
+          var xl = x1;
+          var zl = z1;
+          var xr = x3;
+          var zr = z3;
+        }
+      } else if (x3 == -1) {
+        if (x1 < x2) {
+          var xl = x1;
+          var zl = z1;
+          var xr = x2;
+          var zr = z2;
+        } else {
+          var xl = x2;
+          var zl = z2;
+          var xr = x1;
+          var zr = z1;
+        }
+      }
+      for(var x = xl; x <= xr; x++) {
+        var z = scan(zr, xr, zl, xl, x); 
+        if (dlist[x] > z) {
+          dlist[x] = z;
+          pset(x, y, red, green, blue);
+        }
+      }
+    }
   }
 }
 
@@ -168,47 +232,17 @@ var projection = function(p1, p2, p3, rgb) {
   var s = [];
   s.sx1 = Math.floor(48 / z1 * x1) + 320 / 2;
   s.sy1 = Math.floor(48 / z1 * y1) + 200 / 2;
+  s.z1 = z1;
   s.sx2 = Math.floor(48 / z2 * x2) + 320 / 2;
   s.sy2 = Math.floor(48 / z2 * y2) + 200 / 2;
+  s.z2 = z2;
   s.sx3 = Math.floor(48 / z3 * x3) + 320 / 2;
   s.sy3 = Math.floor(48 / z3 * y3) + 200 / 2;
+  s.z3 = z3;
   s.red = rgb.r;
   s.green = rgb.g;
   s.blue = rgb.b;
   return s;
-};
-
-/**
- * 素朴なアルゴリズムで三角形面を描く
- *
- * @param {number} sx1 X1座標(0 - 319)
- * @param {number} sy1 Y1座標(0 - 199)
- * @param {number} sx2 X2座標(0 - 319)
- * @param {number} sy2 Y2座標(0 - 199)
- * @param {number} sx3 X3座標(0 - 319)
- * @param {number} sy3 Y3座標(0 - 199)
- * @param {number} red   赤色(0 - 255)
- * @param {number} green 緑色(0 - 255)
- * @param {number} blue  青色(0 - 255)
- */
-var triangle = function(sx1, sy1, sx2, sy2, sx3, sy3, red, green, blue) {
-  /* ミニマックス値を求める */
-  var xmin = Math.min(sx1, sx2, sx3);
-  var ymin = Math.min(sy1, sy2, sy3);
-  var xmax = Math.max(sx1, sx2, sx3);
-  var ymax = Math.max(sy1, sy2, sy3);
-
-  /* Y軸方向にスキャンする */
-  for(var y = ymin; y <= ymax; y++) {
-    var x1 = scan(sx1, sy1, sx2, sy2, y);
-    var x2 = scan(sx2, sy2, sx3, sy3, y);
-    var x3 = scan(sx3, sy3, sx1, sy1, y);
-    var xl = min(x1, x2, x3);
-    var xr = max(x1, x2, x3);
-    for(var x = xl; x <= xr; x++) {
-      pset(x, y, red, green, blue);
-    }
-  }
 };
 
 /**
