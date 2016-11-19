@@ -183,12 +183,9 @@ var projection = function(p1, p2, p3, rgb) {
 /**
  * 素朴なアルゴリズムで三角形面を描く
  *
- * @param {number} sx1 X1座標(0 - 319)
- * @param {number} sy1 Y1座標(0 - 199)
- * @param {number} sx2 X2座標(0 - 319)
- * @param {number} sy2 Y2座標(0 - 199)
- * @param {number} sx3 X3座標(0 - 319)
- * @param {number} sy3 Y3座標(0 - 199)
+ * @param {number} sp1  1座標(x, y, z)
+ * @param {number} sp2  2座標(x, y, z)
+ * @param {number} sp3  3座標(x, y, z)
  * @param {number} red   赤色(0 - 255)
  * @param {number} green 緑色(0 - 255)
  * @param {number} blue  青色(0 - 255)
@@ -196,10 +193,13 @@ var projection = function(p1, p2, p3, rgb) {
 var triangle = function(sp1, sp2, sp3, red, green, blue) {
   var sx1 = sp1.x;
   var sy1 = sp1.y;
+  var sz1 = sp1.z;
   var sx2 = sp2.x;
   var sy2 = sp2.y;
+  var sz2 = sp2.z;
   var sx3 = sp3.x;
   var sy3 = sp3.y;
+  var sz3 = sp3.z;
   /* ミニマックス値を求める */
   var xmin = Math.min(sx1, sx2, sx3);
   var ymin = Math.min(sy1, sy2, sy3);
@@ -209,11 +209,14 @@ var triangle = function(sp1, sp2, sp3, red, green, blue) {
   /* Y軸方向にスキャンする */
   for(var y = ymin; y <= ymax; y++) {
     var x1 = scan(sx1, sy1, sx2, sy2, y);
+    var z1 = scan(sz1, sy1, sz2, sy2, y);
     var x2 = scan(sx2, sy2, sx3, sy3, y);
+    var z2 = scan(sz2, sy2, sz3, sy3, y);
     var x3 = scan(sx3, sy3, sx1, sy1, y);
-    var xl = min(x1, x2, x3);
-    var xr = max(x1, x2, x3);
-    for(var x = xl; x <= xr; x++) {
+    var z3 = scan(sz3, sy3, sz1, sy1, y);
+    var spl = min2({x: x1, z: z1}, {x: x2, z: z2}, {x: x3, z:z3});
+    var spr = max2({x: x1, z: z1}, {x: x2, z: z2}, {x: x3, z:z3});
+    for(var x = spl.x; x <= spr.x; x++) {
       pset(x, y, red, green, blue);
     }
   }
@@ -309,6 +312,24 @@ var min = function() {
 };
 
 /**
+ * 与えられた引数の中から、-1を除く値のうち最小のものを返す
+ *
+ * @return {number} 最小の値
+ */
+var min2 = function() {
+  /* 可変長の引数から、-1を除いた配列を作成する */
+  var args = Array.apply(null, arguments);
+  var values = args.filter(function(element, index, array) {
+    return element.x != -1;
+  });
+
+  /* 最小値を返す */
+  return values.sort(function (a, b) {
+    return a.x - b.x;
+  })[0];
+};
+
+/**
  * 与えられた引数の中から、-1を除く値のうち最大のものを返す
  *
  * @return {number} 最大の値
@@ -322,6 +343,24 @@ var max = function() {
 
   /* 最大値を返す */
   return Math.max.apply(null, values);
+};
+
+/**
+ * 与えられた引数の中から、-1を除く値のうち最大のものを返す
+ *
+ * @return {number} 最大の値
+ */
+var max2 = function() {
+  /* 可変長の引数から、-1を除いた配列を作成する */
+  var args = Array.apply(null, arguments);
+  var values = args.filter(function(element, index, array) {
+    return element.x != -1;
+  });
+
+  /* 最大値を返す */
+  return values.sort(function (a,b) {
+    return b.x - a.x;
+  })[0];
 };
 
 /**
