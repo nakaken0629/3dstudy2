@@ -92,7 +92,7 @@ var main = function() {
 function animationLoop(){
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  depthData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  depthData = new Array(320 * 200);
   draw();
   ctx.putImageData(imageData, 0, 0);
   requestAnimationFrame(animationLoop);
@@ -216,8 +216,15 @@ var triangle = function(sp1, sp2, sp3, red, green, blue) {
     var z3 = scan(sz3, sy3, sz1, sy1, y);
     var spl = min2({x: x1, z: z1}, {x: x2, z: z2}, {x: x3, z:z3});
     var spr = max2({x: x1, z: z1}, {x: x2, z: z2}, {x: x3, z:z3});
+    var z = spl.z;
+    var dz = (spr.z - spl.z) / (spr.x - spl.x);
     for(var x = spl.x; x <= spr.x; x++) {
-      pset(x, y, red, green, blue);
+      var depth = dget(x, y);
+      if (depth == null || depth > z) {
+        pset(x, y, red, green, blue);
+        dset(x, y, z);
+      }
+      z += dz;
     }
   }
 };
@@ -277,6 +284,16 @@ var pset = function(sx, sy, red, green, blue) {
       pixels[index + 3] = 255;
     }
   }
+};
+
+var dset = function(sx, sy, depth) {
+  var index = sx + sy * 320;
+  depthData[index] = depth;
+};
+
+var dget = function(sx, sy) {
+  var index = sx + sy * 320;
+  return depthData[index];
 };
 
 // ================
