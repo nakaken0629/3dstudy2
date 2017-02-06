@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ja">
+ <head>
+  <meta charset="UTF-8" />
+  <title>17. 座標系の変換</title>
+ </head>
+ <body>
+  <h1>17. 座標系の変換</h1>
+  <!-- 1dot = 2x2 pixelとする。つまり320x200 dotの描画エリアとなる -->
+  <canvas id="myCanvas"
+          width="640"
+          height="400"
+          style="border: solid 2px black; " />
+<script>
+
+var canvas;
+var ctx;
+var imageData;
+var depthData;
+
+/* 黄金比 */
+var GR = (1.0 + Math.sqrt(5)) / 2.0;
+
+/*
+ * モデリング座標系で、正二十面体を定義する
+ */
+var mvl = [
+  {x: +1.0, y: +GR , z: 0.0, w: 1.0},
+  {x: -1.0, y: +GR , z: 0.0, w: 1.0},
+  {x: +1.0, y: -GR , z: 0.0, w: 1.0},
+  {x: -1.0, y: -GR , z: 0.0, w: 1.0},
+  {x:  0.0, y: +1.0, z: +GR, w: 1.0},
+  {x:  0.0, y: -1.0, z: +GR, w: 1.0},
+  {x:  0.0, y: +1.0, z: -GR, w: 1.0},
+  {x:  0.0, y: -1.0, z: -GR, w: 1.0},
+  {x:  +GR, y:  0.0, z: 1.0, w: 1.0},
+  {x:  -GR, y:  0.0, z: 1.0, w: 1.0},
+  {x:  +GR, y:  0.0, z: 1.0, w: 1.0},
+  {x:  -GR, y:  0.0, z: 1.0, w: 1.0},
+];
+
+var mm = [
+  [mvl[0], mvl[ 1], mvl[ 4]],
+  [mvl[0], mvl[ 6], mvl[ 1]],
+  [mvl[0], mvl[ 4], mvl[ 8]],
+  [mvl[0], mvl[10], mvl[ 6]],
+  [mvl[0], mvl[ 8], mvl[10]],
+  [mvl[1], mvl[ 9], mvl[ 4]],
+  [mvl[1], mvl[ 6], mvl[11]],
+  [mvl[1], mvl[11], mvl[ 9]],
+  [mvl[2], mvl[ 5], mvl[ 3]],
+  [mvl[2], mvl[ 3], mvl[ 7]],
+  [mvl[2], mvl[ 8], mvl[ 5]],
+  [mvl[2], mvl[ 7], mvl[10]],
+  [mvl[2], mvl[10], mvl[ 8]],
+  [mvl[3], mvl[ 5], mvl[ 9]],
+  [mvl[3], mvl[11], mvl[ 7]],
+  [mvl[3], mvl[ 9], mvl[11]],
+  [mvl[4], mvl[ 5], mvl[ 8]],
+  [mvl[4], mvl[ 9], mvl[ 5]],
+  [mvl[6], mvl[10], mvl[ 7]],
+  [mvl[6], mvl[ 7], mvl[11]],
+];
+
+var wml = [];
+
+/**
+ * main関数。ここから始まる。
+ */
+var main = function() {
+  copyModelInWorld();
+  // animationLoop();
+};
+
+/**
+ * 初回の準備
+ */
+var copyModelInWorld = function() {
+  /* HACK: とりあえず一つだけ用意してみる */
+  var wm = [];
+  for(var i = 0; i < mm.length; i++) {
+    var wt = [];
+    for(var j = 0; j < mm[i].lenght; j++) {
+      wt.push({x: mm[i][j].x, y: mm[i][j].y, z: mm[i][j].z});
+    }
+    wm.push(wt);
+  }
+  wml.push(wm);
+}
+
+/**
+ * アニメーションループ
+ * ブラウザにより、おおよそ1/60秒に１回呼び出される
+ */
+var animationLoop = function(){
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  depthData = new Array(320 * 200);
+  draw();
+  ctx.putImageData(imageData, 0, 0);
+  requestAnimationFrame(animationLoop);
+}
+
+/**
+ * バッファーに対して一連の描画を行う。
+ */
+var draw = function() {
+  /*
+   * ３角形面t1とt2を、Z軸方向に往復移動させる。
+   * ３角形面は手前と奥が入れ替わることになる。
+   */
+  for (var i = 0; i < tlist.length; i++) {
+    var t = tlist[i];
+    t.p[1].x += t.vx;
+    t.p[1].y += t.vy;
+    t.p[1].z += t.vz;
+    var z = t.p[1].z;
+    if (z < 300 || z > 800) {
+      t.vx = -t.vx;
+      t.vy = -t.vy;
+      t.vz = -t.vz;
+    }
+  }
+
+  /*
+   * ３角形面を透視投影する
+   */
+  var slist = [];
+  for (var i = 0; i < tlist.length; i++) {
+    var t = tlist[i];
+    var s = projection(t.p[0], t.p[1], t.p[2], t.rgb);
+    slist.push(s);
+  }
+
+  /*
+   * 透視投影された３角形面を描画する
+   */
+  for (var i = 0; i < slist.length; i++) {
+    var s = slist[i];
+    triangle(s.p1, s.p2, s.p3, s.red, s.green, s.blue);
+  }
+}
+
+/**
+ * 透視投影で３角形面を描画する
+ */
+var projection = function(p1, p2, p3, rgb) {
+  /* 画面の中心が原点になるように補正している */
+  var width  = 16 / 48 * 4800;
+  var height = 10 / 48 * 4800;
+  var z = 4800;
+
+  var x1 = p1.x - width  / 2;
+  var y1 = p1.y - height / 2;
+  var z1 = p1.z;
+  var x2 = p2.x - width  / 2;
+  var y2 = p2.y - height / 2;
+  var z2 = p2.z;
+  var x3 = p3.x - width  / 2;
+  var y3 = p3.y - height / 2;
+  var z3 = p3.z;
+
+  /* スクリーン上に投影された座標を計算して描画する */
+  var s = [];
+  s.p1 = {
+    x: Math.floor(48 / z1 * x1) + 320 / 2,
+    y: Math.floor(48 / z1 * y1) + 200 / 2,
+    z: z1
+  };
+  s.p2 = {
+    x: Math.floor(48 / z2 * x2) + 320 / 2,
+    y: Math.floor(48 / z2 * y2) + 200 / 2,
+    z: z2
+  };
+  s.p3 = {
+    x: Math.floor(48 / z3 * x3) + 320 / 2,
+    y: Math.floor(48 / z3 * y3) + 200 / 2,
+    z: z3
+  };
+  s.red = rgb.r;
+  s.green = rgb.g;
+  s.blue = rgb.b;
+  return s;
+};
+
+/**
+ * 素朴なアルゴリズムで三角形面を描く
+ *
+ * @param {number} sp1  1座標(x, y, z)
+ * @param {number} sp2  2座標(x, y, z)
+ * @param {number} sp3  3座標(x, y, z)
+ * @param {number} red   赤色(0 - 255)
+ * @param {number} green 緑色(0 - 255)
+ * @param {number} blue  青色(0 - 255)
+ */
+var triangle = function(sp1, sp2, sp3, red, green, blue) {
+  var sx1 = sp1.x;
+  var sy1 = sp1.y;
+  var sz1 = sp1.z;
+  var sx2 = sp2.x;
+  var sy2 = sp2.y;
+  var sz2 = sp2.z;
+  var sx3 = sp3.x;
+  var sy3 = sp3.y;
+  var sz3 = sp3.z;
+  /* ミニマックス値を求める */
+  var xmin = Math.min(sx1, sx2, sx3);
+  var ymin = Math.min(sy1, sy2, sy3);
+  var xmax = Math.max(sx1, sx2, sx3);
+  var ymax = Math.max(sy1, sy2, sy3);
+
+  /* Y軸方向にスキャンする */
+  for(var y = ymin; y <= ymax; y++) {
+    var x1 = scan(sx1, sy1, sx2, sy2, y);
+    var z1 = scan(sz1, sy1, sz2, sy2, y);
+    var x2 = scan(sx2, sy2, sx3, sy3, y);
+    var z2 = scan(sz2, sy2, sz3, sy3, y);
+    var x3 = scan(sx3, sy3, sx1, sy1, y);
+    var z3 = scan(sz3, sy3, sz1, sy1, y);
+    var spl = min2({x: x1, z: z1}, {x: x2, z: z2}, {x: x3, z:z3});
+    var spr = max2({x: x1, z: z1}, {x: x2, z: z2}, {x: x3, z:z3});
+    var z = spl.z;
+    var dz = (spr.z - spl.z) / (spr.x - spl.x);
+    for(var x = spl.x; x <= spr.x; x++) {
+      var depth = dget(x, y);
+      if (depth == null || depth > z) {
+        pset(x, y, red, green, blue);
+        dset(x, y, z);
+      }
+      z += dz;
+    }
+  }
+};
+
+/**
+ * 線分とスキャンラインとの交点のX座標を求める
+ *
+ * @param {number} sx1 線分のX1座標(0 - 319)
+ * @param {number} sy1 線分のY1座標(0 - 199)
+ * @param {number} sx2 線分のX2座標(0 - 319)
+ * @param {number} sy2 線分のY2座標(0 - 199)
+ * @param {number} y スキャンラインのY座標(0 - 199)
+ *
+ * @return {number} 線分とスキャンラインとの交点のX座標
+ *                  yがsy1とsy2の間にない場合は-1
+ */
+var scan = function(sx1, sy1, sx2, sy2, y) {
+  /* sy1 > sy2の場合、始点と終点を入れ替える */
+  if (sy1 > sy2) {
+    sx1 = [sx2, sx2 = sx1][0];  /* sx1とsx2を入れ替える */
+    sy1 = [sy2, sy2 = sy1][0];  /* sy1とsy2を入れ替える */
+  }
+
+  /* yがsy1とsy2の間にない場合は-1を返す */
+  if (y < sy1 || sy2 < y) {
+    return -1;
+  }
+
+  /* 線分とスキャンラインとの交点のX座標を計算して返す */
+  if (sy1 == sy2) {
+    /* 0除算を防ぐ */
+    return sx1;
+  }
+  var x = (sx2 - sx1 + 0.0) / (sy2 - sy1) * (y - sy1) + sx1;
+  return Math.round(x);
+};
+
+/**
+ * 点を描く
+ *
+ * @param {number} sx X座標(0 - 319)
+ * @param {number} sy Y座標(0 - 199)
+ * @param {number} red   赤色(0 - 255)
+ * @param {number} green 緑色(0 - 255)
+ * @param {number} blue  青色(0 - 255)
+ */
+var pset = function(sx, sy, red, green, blue) {
+  /* 1pxでは見づらいため、2pxとしている */
+  var width = imageData.width;
+  var pixels = imageData.data;
+  for(var x = sx * 2; x < sx * 2 + 2; x++) {
+    for(var y = sy * 2; y < sy * 2 + 2; y++) {
+      var index = (x + y * width) * 4;
+      pixels[index + 0] = red;
+      pixels[index + 1] = green;
+      pixels[index + 2] = blue;
+      pixels[index + 3] = 255;
+    }
+  }
+};
+
+var dset = function(sx, sy, depth) {
+  var index = sx + sy * 320;
+  depthData[index] = depth;
+};
+
+var dget = function(sx, sy) {
+  var index = sx + sy * 320;
+  return depthData[index];
+};
+
+// ================
+//    共通関数群
+// ================
+
+/**
+ * 指定された範囲の整数の乱数を返す
+ *
+ * @param {number} min 最小の値
+ * @param {number} max 最大の値
+ *
+ * @return {number} minとmaxの範囲に収まる乱数
+ */
+var randomInt = function(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+/**
+ * 与えられた引数の中から、-1を除く値のうち最小のものを返す
+ *
+ * @return {number} 最小の値
+ */
+var min = function() {
+  /* 可変長の引数から、-1を除いた配列を作成する */
+  var args = Array.apply(null, arguments);
+  var values = args.filter(function(element, index, array) {
+    return element != -1;
+  });
+
+  /* 最小値を返す */
+  return Math.min.apply(null, values);
+};
+
+/**
+ * 与えられた引数の中から、-1を除く値のうち最小のものを返す
+ *
+ * @return {number} 最小の値
+ */
+var min2 = function() {
+  /* 可変長の引数から、-1を除いた配列を作成する */
+  var args = Array.apply(null, arguments);
+  var values = args.filter(function(element, index, array) {
+    return element.x != -1;
+  });
+
+  /* 最小値を返す */
+  return values.sort(function (a, b) {
+    return a.x - b.x;
+  })[0];
+};
+
+/**
+ * 与えられた引数の中から、-1を除く値のうち最大のものを返す
+ *
+ * @return {number} 最大の値
+ */
+var max = function() {
+  /* 可変長の引数から、-1を除いた配列を作成する */
+  var args = Array.apply(null, arguments);
+  var values = args.filter(function(element, index, array) {
+    return element != -1;
+  });
+
+  /* 最大値を返す */
+  return Math.max.apply(null, values);
+};
+
+/**
+ * 与えられた引数の中から、-1を除く値のうち最大のものを返す
+ *
+ * @return {number} 最大の値
+ */
+var max2 = function() {
+  /* 可変長の引数から、-1を除いた配列を作成する */
+  var args = Array.apply(null, arguments);
+  var values = args.filter(function(element, index, array) {
+    return element.x != -1;
+  });
+
+  /* 最大値を返す */
+  return values.sort(function (a,b) {
+    return b.x - a.x;
+  })[0];
+};
+
+/**
+ * htmlのロードが終了したら実行される
+ */
+window.onload = function() {
+  /* javascriptでcanvasを使うための決まり文句 */
+  canvas = document.getElementById("myCanvas");
+  ctx = canvas.getContext("2d");
+  main();
+};
+
+</script>
+ </body>
+</html>
+
